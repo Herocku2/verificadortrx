@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trxguardian-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:3000/api
+    depends_on:
+      - backend
+    networks:
+      - trxguardian-network
+
+  # Backend service
+  backend:
+    build:
+      context: ../validador-wallets-trx-backend
+      dockerfile: Dockerfile
+    container_name: trxguardian-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../validador-wallets-trx-backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - TRON_NODE=https://api.trongrid.io
+      - CONTRACT_USDT=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+      - REDIS_URL=redis://redis:6379
+      - NOWPAYMENTS_API_KEY=your_nowpayments_api_key
+      - FRONTEND_URL=http://localhost:5173
+      - BACKEND_URL=http://localhost:3000
+    depends_on:
+      - redis
+    networks:
+      - trxguardian-network
+
+  # Redis service for token storage
+  redis:
+    image: redis:alpine
+    container_name: trxguardian-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - trxguardian-network
+
+networks:
+  trxguardian-network:
+    driver: bridge
+
+volumes:
+  redis-data:
