@@ -200,11 +200,14 @@ const AdminResellers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const resellersPerPage = 10;
+  const [isAdmin, setIsAdmin] = useState(false);
   
-  // Verificar si es wallet de administrador
-  if (!wallet || !isAdminWallet(wallet)) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    // Verificar si es wallet de administrador
+    if (wallet && isAdminWallet(wallet)) {
+      setIsAdmin(true);
+    }
+  }, [wallet]);
   
   // Cargar revendedores
   useEffect(() => {
@@ -232,6 +235,11 @@ const AdminResellers = () => {
     fetchResellers();
   }, []);
   
+  // Redirigir si no es administrador
+  if (!isAdmin && !loading) {
+    return <Navigate to="/" replace />;
+  }
+  
   // Filtrar revendedores
   const filteredResellers = resellers.filter(reseller => {
     return reseller.wallet.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -247,6 +255,10 @@ const AdminResellers = () => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+  
+  if (loading) {
+    return <div className="container">Cargando revendedores...</div>;
+  }
   
   return (
     <PageContainer>
@@ -272,9 +284,7 @@ const AdminResellers = () => {
             <SearchIcon>🔍</SearchIcon>
           </SearchBar>
           
-          {loading ? (
-            <EmptyState>Loading resellers...</EmptyState>
-          ) : error ? (
+          {error ? (
             <EmptyState>{error}</EmptyState>
           ) : filteredResellers.length === 0 ? (
             <EmptyState>No resellers found</EmptyState>

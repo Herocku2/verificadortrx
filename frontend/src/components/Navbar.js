@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUser } from '../context/UserContext';
 import { isAdminWallet } from '../services/api';
+import WalletAuth from './WalletAuth';
 
 const NavbarContainer = styled.nav`
   background-color: rgba(10, 25, 41, 0.8);
@@ -154,20 +155,7 @@ const Navbar = () => {
         </NavLinks>
         
         <UserSection>
-          {user && wallet && (
-            <>
-              <TokenBadge>
-                <TokenIcon>🔹</TokenIcon>
-                {user.tokens_disponibles === Infinity ? '∞' : user.tokens_disponibles} tokens
-              </TokenBadge>
-              <PlanBadge plan={user.plan}>
-                {user.plan}
-              </PlanBadge>
-              <WalletBadge>
-                {wallet.substring(0, 6)}...{wallet.substring(wallet.length - 4)}
-              </WalletBadge>
-            </>
-          )}
+          <WalletAuth />
         </UserSection>
       </NavContent>
     </NavbarContainer>

@@ -246,11 +246,14 @@ const AdminUsers = () => {
   const [planFilter, setPlanFilter] = useState('All Plans');
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Verificar si es wallet de administrador
-  if (!wallet || !isAdminWallet(wallet)) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    if (wallet && isAdminWallet(wallet)) {
+      setIsAdmin(true);
+    }
+  }, [wallet]);
   
   // Cargar usuarios
   useEffect(() => {
@@ -285,6 +288,11 @@ const AdminUsers = () => {
     fetchUsers();
   }, [wallet]);
   
+  // Redirigir si no es administrador
+  if (!isAdmin && !loading) {
+    return <Navigate to="/" replace />;
+  }
+  
   // Filtrar usuarios
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.wallet.toLowerCase().includes(searchTerm.toLowerCase());
@@ -306,111 +314,112 @@ const AdminUsers = () => {
     return <div className="container">Cargando usuarios...</div>;
   }
   
-  if (error) {
-    return <div className="container">{error}</div>;
-  }
-  
   return (
-    <UsersContainer className="container">
-      <UsersHeader>
-        <UsersTitle>User Management</UsersTitle>
-        <TotalUsers>
-          <span>👥</span>
-          <span>{users.length} Total Users</span>
-        </TotalUsers>
-      </UsersHeader>
-      
-      <SearchBar>
-        <SearchInput
-          type="text"
-          placeholder="Search by wallet address or plan..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <SearchIcon>🔍</SearchIcon>
-      </SearchBar>
-      
-      <FiltersContainer>
-        <FilterSelect
-          value={planFilter}
-          onChange={(e) => setPlanFilter(e.target.value)}
-        >
-          <option value="All Plans">All Plans</option>
-          <option value="Free">Free</option>
-          <option value="Basic">Basic</option>
-          <option value="Intermedio">Intermedio</option>
-          <option value="Premium">Premium</option>
-          <option value="Unlimited">Unlimited</option>
-        </FilterSelect>
-      </FiltersContainer>
-      
-      <UsersTable>
-        <TableHeader>
-          <HeaderCell>Wallet Address</HeaderCell>
-          <HeaderCell>Plan</HeaderCell>
-          <HeaderCell>Tokens</HeaderCell>
-          <HeaderCell>Total Scans</HeaderCell>
-          <HeaderCell>Join Date</HeaderCell>
-          <HeaderCell>Status</HeaderCell>
-        </TableHeader>
+    <div className="container" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem' }}>
+      <div>
+        <AdminSidebar />
+      </div>
+      <UsersContainer>
+        <UsersHeader>
+          <UsersTitle>User Management</UsersTitle>
+          <TotalUsers>
+            <span>👥</span>
+            <span>{users.length} Total Users</span>
+          </TotalUsers>
+        </UsersHeader>
         
-        <TableBody>
-          {currentUsers.map((user, index) => (
-            <TableRow key={index}>
-              <Cell>
-                <WalletAddress>{user.wallet}</WalletAddress>
-              </Cell>
-              <Cell>
-                <PlanBadge plan={user.plan}>{user.plan}</PlanBadge>
-              </Cell>
-              <TokensCell>
-                <TokenIcon>🔹</TokenIcon>
-                {user.tokens === Infinity ? '∞' : user.tokens}
-              </TokensCell>
-              <Cell>{user.totalScans}</Cell>
-              <Cell>{new Date(user.joinDate).toLocaleDateString()}</Cell>
-              <Cell>
-                <StatusBadge active={user.status === 'active'}>
-                  {user.status}
-                </StatusBadge>
-              </Cell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </UsersTable>
-      
-      <Pagination>
-        <PageInfo>
-          Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} users
-        </PageInfo>
+        <SearchBar>
+          <SearchInput
+            type="text"
+            placeholder="Search by wallet address or plan..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <SearchIcon>🔍</SearchIcon>
+        </SearchBar>
         
-        <PageControls>
-          <PageButton
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+        <FiltersContainer>
+          <FilterSelect
+            value={planFilter}
+            onChange={(e) => setPlanFilter(e.target.value)}
           >
-            Previous
-          </PageButton>
+            <option value="All Plans">All Plans</option>
+            <option value="Free">Free</option>
+            <option value="Basic">Basic</option>
+            <option value="Intermedio">Intermedio</option>
+            <option value="Premium">Premium</option>
+            <option value="Unlimited">Unlimited</option>
+          </FilterSelect>
+        </FiltersContainer>
+        
+        <UsersTable>
+          <TableHeader>
+            <HeaderCell>Wallet Address</HeaderCell>
+            <HeaderCell>Plan</HeaderCell>
+            <HeaderCell>Tokens</HeaderCell>
+            <HeaderCell>Total Scans</HeaderCell>
+            <HeaderCell>Join Date</HeaderCell>
+            <HeaderCell>Status</HeaderCell>
+          </TableHeader>
           
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
+          <TableBody>
+            {currentUsers.map((user, index) => (
+              <TableRow key={index}>
+                <Cell>
+                  <WalletAddress>{user.wallet}</WalletAddress>
+                </Cell>
+                <Cell>
+                  <PlanBadge plan={user.plan}>{user.plan}</PlanBadge>
+                </Cell>
+                <TokensCell>
+                  <TokenIcon>🔹</TokenIcon>
+                  {user.tokens === Infinity ? '∞' : user.tokens}
+                </TokensCell>
+                <Cell>{user.totalScans}</Cell>
+                <Cell>{new Date(user.joinDate).toLocaleDateString()}</Cell>
+                <Cell>
+                  <StatusBadge active={user.status === 'active'}>
+                    {user.status}
+                  </StatusBadge>
+                </Cell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </UsersTable>
+        
+        <Pagination>
+          <PageInfo>
+            Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} users
+          </PageInfo>
+          
+          <PageControls>
             <PageButton
-              key={pageNumber}
-              active={pageNumber === currentPage}
-              onClick={() => handlePageChange(pageNumber)}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
             >
-              {pageNumber}
+              Previous
             </PageButton>
-          ))}
-          
-          <PageButton
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </PageButton>
-        </PageControls>
-      </Pagination>
-    </UsersContainer>
+            
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
+              <PageButton
+                key={pageNumber}
+                active={pageNumber === currentPage}
+                onClick={() => handlePageChange(pageNumber)}
+              >
+                {pageNumber}
+              </PageButton>
+            ))}
+            
+            <PageButton
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </PageButton>
+          </PageControls>
+        </Pagination>
+      </UsersContainer>
+    </div>
   );
 };
 

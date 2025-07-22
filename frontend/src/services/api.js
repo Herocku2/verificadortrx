@@ -46,10 +46,64 @@ export const verifyWalletDetailed = async (wallet) => {
 // Obtener información del usuario
 export const getUserInfo = async (wallet) => {
   try {
-    const response = await apiClient.get(`/users/${wallet}`);
-    return response.data;
+    const response = await apiClient.get(`/users/info/${wallet}`);
+    return response.data.user;
   } catch (error) {
     console.error('Error al obtener información del usuario:', error);
+    throw error;
+  }
+};
+
+// Verificar si un usuario existe
+export const checkUserExists = async (wallet) => {
+  try {
+    const response = await apiClient.get(`/users/check/${wallet}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al verificar usuario:', error);
+    throw error;
+  }
+};
+
+// Registrar un nuevo usuario
+export const registerUser = async (wallet, username) => {
+  try {
+    const response = await apiClient.post('/users/register', {
+      wallet,
+      username
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al registrar usuario:', error);
+    throw error;
+  }
+};
+
+// Actualizar el plan del usuario
+export const updateUserPlan = async (wallet, plan, tokens, subscriptionExpires) => {
+  try {
+    const response = await apiClient.post('/users/update-plan', {
+      wallet,
+      plan,
+      tokens,
+      subscription_expires: subscriptionExpires
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar plan:', error);
+    throw error;
+  }
+};
+
+// Consumir token del usuario
+export const consumeUserToken = async (wallet) => {
+  try {
+    const response = await apiClient.post('/users/consume-token', {
+      wallet
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al consumir token:', error);
     throw error;
   }
 };

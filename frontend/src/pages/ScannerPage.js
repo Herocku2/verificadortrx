@@ -3,8 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import WalletInput from '../components/WalletInput';
+import LimitReachedModal from '../components/LimitReachedModal';
 import { useUser } from '../context/UserContext';
 import { verifyWallet, verifyWalletDetailed } from '../services/api';
+import useIPLimits from '../hooks/useIPLimits';
 
 const ScannerContainer = styled.div`
   display: flex;
@@ -260,7 +262,10 @@ const ScannerPage = () => {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [analysisType, setAnalysisType] = useState('instant');
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitType, setLimitType] = useState('ip');
   const navigate = useNavigate();
+  const { ipLimits, consumeIPLimit, getTimeUntilReset } = useIPLimits();
   
   // Si hay una wallet en los parámetros de búsqueda, realizar análisis automáticamente
   useEffect(() => {
@@ -275,6 +280,33 @@ const ScannerPage = () => {
     setAnalysisType(type);
     
     try {
+      // Si el usuario no está logueado, verificar límites por IP
+      if (!user || !userWallet) {
+        if (!ipLimits.canScan) {
+          setLimitType('ip');
+          setShowLimitModal(true);
+          setLoading(false);
+          return;
+        }
+        
+        // Consumir límite por IP
+        const ipResult = await consumeIPLimit();
+        if (!ipResult.success) {
+          setLimitType('ip');
+          setShowLimitModal(true);
+          setLoading(false);
+          return;
+        }
+      } else {
+        // Usuario logueado: verificar tokens
+        if (user.tokens_disponibles <= 0 && user.tokens_disponibles !== Infinity) {
+          setLimitType('tokens');
+          setShowLimitModal(true);
+          setLoading(false);
+          return;
+        }
+      }
+      
       let response;
       
       if (type === 'comprehensive') {
@@ -293,9 +325,12 @@ const ScannerPage = () => {
       console.error('Error al analizar wallet:', err);
       
       if (err.response?.status === 403) {
-        setError('No tienes suficientes tokens para realizar esta consulta. Por favor, adquiere un plan.');
+        setError('You don\'t have enough tokens to perform this query. Please purchase a plan.');
+      } else if (err.response?.status === 429) {
+        setLimitType('ip');
+        setShowLimitModal(true);
       } else {
-        setError('Error al analizar la wallet. Por favor, intenta de nuevo.');
+        setError('Error analyzing wallet. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -467,6 +502,13 @@ const ScannerPage = () => {
           </ResultCard>
         </ResultsContainer>
       )}
+
+      <LimitReachedModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        timeUntilReset={getTimeUntilReset()}
+        type={limitType}
+      />
     </ScannerContainer>
   );
 };

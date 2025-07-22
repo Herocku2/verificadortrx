@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUser } from './context/UserContext';
 import { isAdminWallet } from './services/api';
+import TestComponent from './TestComponent';
 
 // Componentes
 import Navbar from './components/Navbar';
