@@ -14,7 +14,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - REACT_APP_API_URL=http://localhost:3000/api
+      - REACT_APP_API_URL=http://localhost:5174/api
     depends_on:
       - backend
     networks:
@@ -27,19 +27,19 @@ services:
       dockerfile: Dockerfile
     container_name: trxguardian-backend
     ports:
-      - "3000:3000"
+      - "5174:5174"
     volumes:
       - ../validador-wallets-trx-backend:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - PORT=3000
+      - PORT=5174
       - TRON_NODE=https://api.trongrid.io
       - CONTRACT_USDT=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
       - REDIS_URL=redis://redis:6379
       - NOWPAYMENTS_API_KEY=your_nowpayments_api_key
       - FRONTEND_URL=http://localhost:5173
-      - BACKEND_URL=http://localhost:3000
+      - BACKEND_URL=http://localhost:5174
     depends_on:
       - redis
     networks:
