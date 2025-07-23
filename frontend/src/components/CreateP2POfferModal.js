@@ -5,6 +5,26 @@ import Modal from './Modal';
 import Button from './Button';
 import p2pService from '../services/p2pService';
 
+const ModalContent = styled.div`
+  max-width: 100%;
+  color: var(--color-text);
+`;
+
+const FormTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+  text-align: center;
+`;
+
+const FormSubtitle = styled.h3`
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary);
+`;
+
 const FormGroup = styled.div`
   margin-bottom: 1.5rem;
 `;
@@ -40,10 +60,66 @@ const Select = styled.select`
   border-radius: 8px;
   color: var(--color-text);
   font-size: 0.875rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1em;
 
   &:focus {
     outline: none;
     border-color: var(--color-primary);
+  }
+`;
+
+const RadioGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
+const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: ${props => props.checked ? 'rgba(0, 120, 255, 0.1)' : 'transparent'};
+  border: 1px solid ${props => props.checked ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.1)'};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 120, 255, 0.05);
+  }
+`;
+
+const RadioInput = styled.input`
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid ${props => props.checked ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.3)'};
+  position: relative;
+  
+  &:checked {
+    border-color: var(--color-primary);
+    
+    &:after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-primary);
+    }
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 120, 255, 0.2);
   }
 `;
 
@@ -117,6 +193,7 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
   const [formData, setFormData] = useState({
     tipo: 'venta',
     precio_usdt: '',
+    precio_tipo: 'fijo', // Nuevo campo para tipo de precio (fijo o dinámico)
     cantidad_min: '',
     cantidad_max: '',
     pais_codigo: 'CO',
@@ -389,23 +466,38 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Crear Nueva Oferta P2P">
-      <form onSubmit={handleSubmit}>
-        <FormGroup>
-          <Label>Tipo de Oferta</Label>
-          <Select 
-            name="tipo" 
-            value={formData.tipo} 
-            onChange={handleChange}
-          >
-            <option value="venta">Vender USDT</option>
-            <option value="compra">Comprar USDT</option>
-          </Select>
-        </FormGroup>
-
-        <FormRow>
+    <Modal isOpen={isOpen} onClose={onClose} title="Crear Nueva Oferta">
+      <ModalContent>
+        <FormTitle>Crear una nueva oferta</FormTitle>
+        <form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label>País</Label>
+            <FormSubtitle>¿Estás comprando o vendiendo criptomonedas?</FormSubtitle>
+            <RadioGroup>
+              <RadioLabel checked={formData.tipo === 'compra'}>
+                <RadioInput 
+                  type="radio" 
+                  name="tipo" 
+                  value="compra" 
+                  checked={formData.tipo === 'compra'} 
+                  onChange={handleChange}
+                />
+                <span>Comprar USDT</span>
+              </RadioLabel>
+              <RadioLabel checked={formData.tipo === 'venta'}>
+                <RadioInput 
+                  type="radio" 
+                  name="tipo" 
+                  value="venta" 
+                  checked={formData.tipo === 'venta'} 
+                  onChange={handleChange}
+                />
+                <span>Vender USDT</span>
+              </RadioLabel>
+            </RadioGroup>
+          </FormGroup>
+
+          <FormGroup>
+            <FormSubtitle>¿En qué ubicación quieres anunciar tu oferta?</FormSubtitle>
             <Select 
               name="pais_codigo" 
               value={formData.pais_codigo} 
@@ -420,38 +512,19 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
           </FormGroup>
 
           <FormGroup>
-            <Label>Moneda</Label>
-            <Input 
-              type="text" 
+            <FormSubtitle>¿Qué moneda estás {formData.tipo === 'compra' ? 'ofreciendo' : 'aceptando'}?</FormSubtitle>
+            <Select 
               name="moneda_local" 
               value={formData.moneda_local} 
-              readOnly
-            />
-          </FormGroup>
-        </FormRow>
-
-        <FormRow>
-          <FormGroup>
-            <Label>Precio por USDT</Label>
-            <Input 
-              type="number" 
-              name="precio_usdt" 
-              value={formData.precio_usdt} 
               onChange={handleChange}
-              placeholder="Ej: 3850"
-              step="0.01"
-              min="0.01"
-              required
-            />
-            {referencePrices && referencePrices[formData.pais_codigo] && (
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>
-                Precio de referencia: {referencePrices[formData.pais_codigo].price} {formData.moneda_local}
-              </div>
-            )}
+              disabled
+            >
+              <option value={formData.moneda_local}>{formData.moneda_local}</option>
+            </Select>
           </FormGroup>
 
           <FormGroup>
-            <Label>Método de Pago</Label>
+            <FormSubtitle>¿Qué método de pago quieres aceptar?</FormSubtitle>
             <Select 
               name="metodo_pago" 
               value={formData.metodo_pago} 
@@ -464,71 +537,122 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
               ))}
             </Select>
           </FormGroup>
-        </FormRow>
 
-        <FormRow>
           <FormGroup>
-            <Label>Cantidad Mínima (USDT)</Label>
-            <Input 
-              type="number" 
-              name="cantidad_min" 
-              value={formData.cantidad_min} 
-              onChange={handleChange}
-              placeholder="Ej: 50"
-              step="1"
-              min="1"
-              required
-            />
+            <FormSubtitle>¿Cómo quieres establecer tu precio?</FormSubtitle>
+            <RadioGroup>
+              <RadioLabel checked={formData.precio_tipo === 'fijo'}>
+                <RadioInput 
+                  type="radio" 
+                  name="precio_tipo" 
+                  value="fijo" 
+                  checked={formData.precio_tipo === 'fijo'} 
+                  onChange={(e) => setFormData({...formData, precio_tipo: e.target.value})}
+                />
+                <span>Precio fijo</span>
+              </RadioLabel>
+              <RadioLabel checked={formData.precio_tipo === 'dinamico'}>
+                <RadioInput 
+                  type="radio" 
+                  name="precio_tipo" 
+                  value="dinamico" 
+                  checked={formData.precio_tipo === 'dinamico'} 
+                  onChange={(e) => setFormData({...formData, precio_tipo: e.target.value})}
+                />
+                <span>Precio dinámico</span>
+              </RadioLabel>
+            </RadioGroup>
+            
+            <FormRow>
+              <Input 
+                type="number" 
+                name="precio_usdt" 
+                value={formData.precio_usdt} 
+                onChange={handleChange}
+                placeholder="Ingresa el precio"
+                step="0.01"
+                min="0.01"
+                required
+              />
+              <Input 
+                type="text" 
+                value={formData.moneda_local} 
+                readOnly
+                style={{ width: '100px', textAlign: 'center' }}
+              />
+            </FormRow>
+            
+            {referencePrices && referencePrices[formData.pais_codigo] && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>
+                Precio de referencia: {referencePrices[formData.pais_codigo].price} {formData.moneda_local}
+              </div>
+            )}
           </FormGroup>
 
           <FormGroup>
-            <Label>Cantidad Máxima (USDT)</Label>
-            <Input 
-              type="number" 
-              name="cantidad_max" 
-              value={formData.cantidad_max} 
-              onChange={handleChange}
-              placeholder="Ej: 1000"
-              step="1"
-              min="1"
-              required
-            />
-          </FormGroup>
-        </FormRow>
+            <FormSubtitle>¿Cuáles son los límites de trading para este intercambio?</FormSubtitle>
+            <FormRow>
+              <FormGroup>
+                <Label>Cantidad Mínima (USDT)</Label>
+                <Input 
+                  type="number" 
+                  name="cantidad_min" 
+                  value={formData.cantidad_min} 
+                  onChange={handleChange}
+                  placeholder="Mínimo"
+                  step="1"
+                  min="1"
+                  required
+                />
+              </FormGroup>
 
-        <FormGroup>
-          <Label>Tiempo Límite (minutos)</Label>
-          <Input 
-            type="number" 
-            name="tiempo_limite" 
-            value={formData.tiempo_limite} 
-            onChange={handleChange}
-            placeholder="Ej: 30"
-            step="1"
-            min="5"
-            max="60"
-            required
-          />
-        </FormGroup>
+              <FormGroup>
+                <Label>Cantidad Máxima (USDT)</Label>
+                <Input 
+                  type="number" 
+                  name="cantidad_max" 
+                  value={formData.cantidad_max} 
+                  onChange={handleChange}
+                  placeholder="Máximo"
+                  step="1"
+                  min="1"
+                  required
+                />
+              </FormGroup>
+            </FormRow>
+          </FormGroup>
+
+          <FormGroup>
+            <FormSubtitle>Tiempo límite para completar el pago</FormSubtitle>
+            <Select 
+              name="tiempo_limite" 
+              value={formData.tiempo_limite} 
+              onChange={handleChange}
+              required
+            >
+              <option value="15">15 minutos</option>
+              <option value="30">30 minutos</option>
+              <option value="45">45 minutos</option>
+              <option value="60">60 minutos</option>
+            </Select>
+          </FormGroup>
 
         {formData.metodo_pago === 'transferencia_bancaria' && (
-          <BankDetails>
-            <FormGroup>
-              <Label>Banco</Label>
-              <Select 
-                name="banco_nombre" 
-                value={formData.banco_nombre} 
-                onChange={handleBankChange}
-                required
-              >
-                <option value="">Selecciona un banco</option>
-                {banks.map(bank => (
-                  <option key={bank.nombre} value={bank.nombre}>
-                    {bank.nombre}
-                  </option>
-                ))}
-              </Select>
-            </FormGroup>
+          <FormGroup>
+            <FormSubtitle>Detalles de la cuenta bancaria</FormSubtitle>
+            <Select 
+              name="banco_nombre" 
+              value={formData.banco_nombre} 
+              onChange={handleBankChange}
+              required
+            >
+              <option value="">Selecciona un banco</option>
+              {banks.map(bank => (
+                <option key={bank.nombre} value={bank.nombre}>
+                  {bank.nombre}
+                </option>
+              ))}
+            </Select>
 
             <FormRow>
               <FormGroup>
@@ -567,11 +691,12 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
                 <option value="Corriente">Corriente</option>
               </Select>
             </FormGroup>
-          </BankDetails>
+          </FormGroup>
         )}
 
         {formData.metodo_pago === 'billetera_digital' && (
-          <BankDetails>
+          <FormGroup>
+            <FormSubtitle>Detalles de la billetera digital</FormSubtitle>
             <FormRow>
               <FormGroup>
                 <Label>Tipo de Billetera</Label>
@@ -597,41 +722,54 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
                 />
               </FormGroup>
             </FormRow>
-          </BankDetails>
+          </FormGroup>
         )}
 
         <FormGroup>
-          <Label>Descripción</Label>
-          <TextArea 
-            name="descripcion" 
-            value={formData.descripcion} 
-            onChange={handleChange}
-            placeholder="Describe tu oferta (opcional)"
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <Label>Instrucciones de Pago</Label>
+          <FormSubtitle>¿Cuáles son los términos y condiciones para operar contigo?</FormSubtitle>
           <TextArea 
             name="instrucciones" 
             value={formData.instrucciones} 
             onChange={handleChange}
-            placeholder="Instrucciones específicas para el pago (opcional)"
+            placeholder="Escribe aquí tus instrucciones específicas para el pago y cualquier otra condición importante para la operación."
+          />
+          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>
+            No incluyas información personal en tus términos ya que será visible públicamente.
+          </div>
+        </FormGroup>
+
+        <FormGroup>
+          <FormSubtitle>Información adicional (opcional)</FormSubtitle>
+          <TextArea 
+            name="descripcion" 
+            value={formData.descripcion} 
+            onChange={handleChange}
+            placeholder="Añade cualquier información adicional que quieras compartir sobre tu oferta."
           />
         </FormGroup>
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
+          <Button type="button" variant="secondary" onClick={onClose} style={{ minWidth: '120px' }}>
             Cancelar
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button 
+            type="submit" 
+            disabled={loading} 
+            style={{ 
+              minWidth: '200px', 
+              background: 'var(--color-success)', 
+              fontSize: '1rem',
+              padding: '0.75rem 1.5rem'
+            }}
+          >
             {loading ? 'Creando...' : 'Crear Oferta'}
           </Button>
         </div>
       </form>
+    </ModalContent>
     </Modal>
   );
 };
