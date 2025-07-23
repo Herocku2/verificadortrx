@@ -67,13 +67,24 @@ export const verifyWallet = async (wallet) => {
     try {
       const statusResponse = await apiClient.get('/verify/status');
       if (!statusResponse.data.success) {
-        throw new Error('La conexión con la blockchain de TRON no está disponible en este momento. Por favor, intenta más tarde.');
+        console.warn('La conexión con TRON no está disponible, intentando con método alternativo');
       }
     } catch (statusError) {
       console.warn('Error al verificar estado de conexión TRON:', statusError);
-      // Continuar de todos modos, el endpoint principal manejará el error si persiste
+      // Continuar de todos modos, intentaremos con el endpoint simplificado
     }
     
+    // Intentar primero con el endpoint simplificado que es más robusto
+    try {
+      console.log('Intentando verificación simplificada...');
+      const simpleResponse = await apiClient.get(`/verify/simple/${wallet}`);
+      return simpleResponse.data;
+    } catch (simpleError) {
+      console.warn('Error en verificación simplificada, intentando método estándar:', simpleError);
+      // Si falla, intentar con el método estándar
+    }
+    
+    // Método estándar como fallback
     const response = await apiClient.get(`/verify/${wallet}`);
     return response.data;
   } catch (error) {

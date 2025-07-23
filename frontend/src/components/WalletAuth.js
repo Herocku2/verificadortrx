@@ -122,14 +122,38 @@ const WalletAuth = () => {
   const [tronWeb, setTronWeb] = useState(null);
   const [connecting, setConnecting] = useState(false);
 
-  // Check for TronWeb availability
+  // Check for TronWeb availability and detect wallet changes
   useEffect(() => {
+    let lastAddress = null;
+    
     const checkTronWeb = () => {
       if (window.tronWeb) {
         try {
           // Verificar si tronWeb está disponible sin acceder a .ready directamente
-          if (window.tronWeb.defaultAddress) {
+          if (window.tronWeb.defaultAddress && window.tronWeb.defaultAddress.base58) {
+            const currentAddress = window.tronWeb.defaultAddress.base58;
+            
+            // Actualizar el estado de tronWeb
             setTronWeb(window.tronWeb);
+            
+            // Detectar cambio de wallet en TronLink
+            if (lastAddress && currentAddress !== lastAddress && wallet && currentAddress !== wallet) {
+              console.log(`Cambio de wallet detectado: ${lastAddress} -> ${currentAddress}`);
+              
+              // Preguntar al usuario si desea cambiar de wallet
+              if (window.confirm(`Se ha detectado un cambio de wallet en TronLink.\n\nWallet actual: ${wallet}\nNueva wallet: ${currentAddress}\n\n¿Deseas cambiar a la nueva wallet?`)) {
+                // Desconectar la wallet actual
+                disconnect();
+                
+                // Esperar un momento y luego conectar la nueva wallet
+                setTimeout(() => {
+                  updateWallet(currentAddress);
+                  window.location.reload();
+                }, 500);
+              }
+            }
+            
+            lastAddress = currentAddress;
           }
         } catch (error) {
           console.error('Error checking TronWeb:', error);
@@ -141,9 +165,22 @@ const WalletAuth = () => {
     // Usar un intervalo más largo para evitar bucles y advertencias de deprecación
     const interval = setInterval(checkTronWeb, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [wallet]);
 
   const connectWallet = async () => {
+    // Si ya hay una wallet conectada, primero desconectarla
+    if (wallet) {
+      if (window.confirm('Ya tienes una wallet conectada. ¿Deseas desconectarla y conectar otra?')) {
+        disconnect();
+        // Esperar a que se complete la desconexión
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+      return;
+    }
+    
+    // Verificar si TronLink está instalado
     if (!window.tronWeb) {
       if (window.confirm('TronLink no detectado. ¿Deseas instalar la extensión TronLink?')) {
         window.open('https://www.tronlink.org/', '_blank');
@@ -157,36 +194,46 @@ const WalletAuth = () => {
       if (window.tronWeb && window.tronWeb.defaultAddress) {
         const address = window.tronWeb.defaultAddress.base58;
         if (address) {
-          console.log("Wallet conectada:", address);
+          console.log("Wallet detectada:", address);
           
+          // Verificar si la wallet está desbloqueada
           try {
-            // Check if user exists
-            const data = await checkUserExists(address);
+            // Intentar obtener la cuenta actual
+            await window.tronWeb.trx.getAccount(address);
+            console.log("Wallet desbloqueada:", address);
             
-            if (data && data.exists) {
-              // User exists, log them in
-              updateWallet(address);
-              setShowWelcome(true);
-              setTimeout(() => setShowWelcome(false), 3000);
-            } else {
-              // New user, show registration modal
-              updateWallet(address);
-              setShowRegisterModal(true);
+            try {
+              // Check if user exists
+              const data = await checkUserExists(address);
+              
+              if (data && data.exists) {
+                // User exists, log them in
+                updateWallet(address);
+                setShowWelcome(true);
+                setTimeout(() => setShowWelcome(false), 3000);
+              } else {
+                // New user, show registration modal
+                updateWallet(address);
+                setShowRegisterModal(true);
+              }
+            } catch (apiError) {
+              console.error('Error API al verificar usuario:', apiError);
+              
+              // Si es un error de red, asumir que el usuario existe
+              if (apiError.message === 'Network Error' || apiError.code === 'ERR_NETWORK') {
+                console.log('Backend no disponible, asumiendo que el usuario existe');
+                updateWallet(address);
+                setShowWelcome(true);
+                setTimeout(() => setShowWelcome(false), 3000);
+              } else {
+                // Si hay otro tipo de error con la API, al menos conectamos la wallet
+                updateWallet(address);
+                alert('Wallet conectada, pero hubo un problema al verificar tu cuenta. El backend podría estar desconectado.');
+              }
             }
-          } catch (apiError) {
-            console.error('Error API al verificar usuario:', apiError);
-            
-            // Si es un error de red, asumir que el usuario existe
-            if (apiError.message === 'Network Error' || apiError.code === 'ERR_NETWORK') {
-              console.log('Backend no disponible, asumiendo que el usuario existe');
-              updateWallet(address);
-              setShowWelcome(true);
-              setTimeout(() => setShowWelcome(false), 3000);
-            } else {
-              // Si hay otro tipo de error con la API, al menos conectamos la wallet
-              updateWallet(address);
-              alert('Wallet conectada, pero hubo un problema al verificar tu cuenta. El backend podría estar desconectado.');
-            }
+          } catch (walletError) {
+            console.error('Error al verificar wallet:', walletError);
+            alert('Por favor desbloquea tu wallet TronLink y vuelve a intentarlo');
           }
         } else {
           alert('Por favor desbloquea tu wallet TronLink y vuelve a intentarlo');
@@ -251,8 +298,20 @@ const WalletAuth = () => {
   };
 
   const disconnect = () => {
-    updateWallet(null);
+    // Limpiar el estado local
     setShowWelcome(false);
+    setTronWeb(null);
+    
+    // Limpiar localStorage
+    localStorage.removeItem('wallet');
+    
+    // Actualizar el contexto
+    updateWallet(null);
+    
+    // Forzar recarga de la página para asegurar que todo se reinicie correctamente
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const formatWallet = (address) => {

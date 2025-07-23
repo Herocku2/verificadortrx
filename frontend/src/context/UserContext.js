@@ -77,12 +77,40 @@ export const UserProvider = ({ children }) => {
   // Función para actualizar la wallet del usuario
   const updateWallet = (newWallet) => {
     if (newWallet && newWallet.startsWith('T')) {
+      // Conectar nueva wallet
       setWallet(newWallet);
       localStorage.setItem('wallet', newWallet);
+      console.log(`Wallet conectada: ${newWallet}`);
     } else if (newWallet === null) {
+      // Desconectar wallet
+      console.log('Desconectando wallet...');
+      
+      // Limpiar estado
       setWallet(null);
-      localStorage.removeItem('wallet');
       setUser(null);
+      setError(null);
+      
+      // Limpiar localStorage
+      localStorage.removeItem('wallet');
+      
+      // También podríamos limpiar otros datos relacionados con la wallet
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('user_') || key.startsWith('p2p_user_'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          console.error(`Error al eliminar ${key} de localStorage:`, e);
+        }
+      });
+      
+      console.log('Wallet desconectada correctamente');
     }
   };
 
