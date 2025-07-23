@@ -254,17 +254,58 @@ const P2PPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
-    loadOffers();
-  }, [filters]);
+    // Solo cargar ofertas si estamos en la pestaña de ofertas
+    if (activeTab === 'ofertas') {
+      loadOffers();
+    }
+  }, [filters, activeTab]);
 
   const loadOffers = async () => {
     try {
       setLoading(true);
       const response = await p2pService.getP2POffers(filters.country, filters);
-      setOffers(response.data.data || []);
+      
+      // Verificar que la respuesta tenga la estructura esperada
+      if (response && response.data && Array.isArray(response.data.data)) {
+        setOffers(response.data.data);
+        
+        // Si hay ofertas offline, mostrar un mensaje
+        const hasOfflineOffers = response.data.data.some(offer => offer._offline);
+        if (hasOfflineOffers) {
+          console.log('Algunas ofertas se están mostrando en modo offline');
+        }
+      } else {
+        console.warn('Respuesta de ofertas con formato inesperado:', response);
+        setOffers([]);
+      }
     } catch (error) {
       console.error('Error loading offers:', error);
-      setOffers([]);
+      
+      if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+        console.log('Error de conexión al servidor. Usando datos en caché si están disponibles.');
+        
+        // Intentar usar datos en caché del localStorage
+        try {
+          const cachedData = localStorage.getItem(`p2p_offers_${filters.country}`);
+          if (cachedData) {
+            const parsedData = JSON.parse(cachedData);
+            if (parsedData && parsedData.data && Array.isArray(parsedData.data)) {
+              setOffers(parsedData.data);
+              console.log('Usando datos en caché para ofertas P2P');
+            } else {
+              console.warn('Datos en caché con formato inesperado');
+              setOffers([]);
+            }
+          } else {
+            setOffers([]);
+          }
+        } catch (cacheError) {
+          console.error('Error al leer datos en caché:', cacheError);
+          setOffers([]);
+        }
+      } else {
+        setOffers([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -298,6 +339,7 @@ const P2PPage = () => {
     return '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
   };
 
+  // Si no hay wallet, mostrar una versión limitada de la página
   if (!wallet) {
     return (
       <P2PContainer className="container">
@@ -307,11 +349,121 @@ const P2PPage = () => {
             Conecta tu wallet para acceder al trading P2P descentralizado
           </Subtitle>
         </P2PHeader>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Button onClick={() => navigate('/scanner')}>
-            Conectar Wallet
-          </Button>
-        </div>
+        
+        {/* Permitir ver ofertas sin wallet conectada */}
+        <TabsContainer>
+          <Tab 
+            active={activeTab === 'ofertas'} 
+            onClick={() => setActiveTab('ofertas')}
+          >
+            Ver Ofertas
+          </Tab>
+        </TabsContainer>
+        
+        {activeTab === 'ofertas' && (
+          <>
+            <FiltersContainer>
+              <FilterGroup>
+                <FilterLabel>País</FilterLabel>
+                <FilterSelect
+                  value={filters.country}
+                  onChange={(e) => handleFilterChange('country', e.target.value)}
+                >
+                  {countries.map(country => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </FilterSelect>
+              </FilterGroup>
+
+              <FilterGroup>
+                <FilterLabel>Tipo</FilterLabel>
+                <FilterSelect
+                  value={filters.type}
+                  onChange={(e) => handleFilterChange('type', e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="compra">Comprar USDT</option>
+                  <option value="venta">Vender USDT</option>
+                </FilterSelect>
+              </FilterGroup>
+            </FiltersContainer>
+            
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                Cargando ofertas...
+              </div>
+            ) : offers.length === 0 ? (
+              <EmptyState>
+                <h3>No hay ofertas disponibles</h3>
+                <p>Conecta tu wallet para crear la primera oferta en este país</p>
+                <Button onClick={() => navigate('/scanner')} style={{ marginTop: '1rem' }}>
+                  Conectar Wallet
+                </Button>
+              </EmptyState>
+            ) : (
+              <>
+                <OffersContainer>
+                  {offers.map(offer => (
+                    <OfferCard
+                      key={offer.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <OfferHeader>
+                        <OfferType type={offer.tipo}>
+                          {offer.tipo === 'compra' ? 'Comprando' : 'Vendiendo'} USDT
+                        </OfferType>
+                        <OfferPrice>
+                          {offer.precio_usdt} {offer.moneda_local}
+                        </OfferPrice>
+                      </OfferHeader>
+
+                      <OfferDetails>
+                        <OfferDetail>
+                          <DetailLabel>Límites</DetailLabel>
+                          <DetailValue>
+                            {offer.cantidad_min} - {offer.cantidad_max} USDT
+                          </DetailValue>
+                        </OfferDetail>
+                        <OfferDetail>
+                          <DetailLabel>Método de Pago</DetailLabel>
+                          <DetailValue>
+                            {paymentMethods.find(m => m.id === offer.metodo_pago)?.name || offer.metodo_pago}
+                          </DetailValue>
+                        </OfferDetail>
+                      </OfferDetails>
+
+                      <OfferActions>
+                        <UserInfo>
+                          <span>{offer.wallet ? offer.wallet.substring(0, 8) + '...' : 'Usuario'}</span>
+                          <UserRating>
+                            {renderStars(offer.puntuacion_reputacion || 5)}
+                            <span>({offer.trades_completados || 0})</span>
+                          </UserRating>
+                        </UserInfo>
+                        <Button
+                          size="small"
+                          onClick={() => navigate('/scanner')}
+                        >
+                          Conectar para Tradear
+                        </Button>
+                      </OfferActions>
+                    </OfferCard>
+                  ))}
+                </OffersContainer>
+                
+                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                  <Button onClick={() => navigate('/scanner')}>
+                    Conectar Wallet para Tradear
+                  </Button>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </P2PContainer>
     );
   }

@@ -194,37 +194,93 @@ const WalletInput = ({ onAnalyze, showOptions = true, showConnect = true }) => {
   };
   
   const connectTronLink = async () => {
-    if (window.tronWeb && window.tronWeb.ready) {
+    if (window.tronWeb) {
       try {
-        const address = window.tronWeb.defaultAddress.base58;
-        setWallet(address);
-        setTronLinkStatus('Connected');
-        updateWallet(address);
+        console.log("Intentando conectar TronLink...");
+        
+        // Esperar un momento para asegurarnos de que TronLink esté completamente cargado
+        setTimeout(async () => {
+          try {
+            // Verificar si podemos acceder a la dirección
+            if (window.tronWeb.defaultAddress && window.tronWeb.defaultAddress.base58) {
+              const address = window.tronWeb.defaultAddress.base58;
+              console.log("Wallet detectada:", address);
+              setWallet(address);
+              setTronLinkStatus('Connected');
+              updateWallet(address);
+            } else {
+              // Si no hay dirección disponible, podría ser que el usuario no ha desbloqueado TronLink
+              alert('Por favor desbloquea tu wallet TronLink y vuelve a intentarlo');
+              setTronLinkStatus('Not Connected');
+            }
+          } catch (delayedError) {
+            console.error('Error después de espera:', delayedError);
+            setTronLinkStatus('Connection Error');
+            alert('Error al conectar: ' + (delayedError.message || 'Error desconocido'));
+          }
+        }, 1000);
       } catch (error) {
         console.error('Error connecting to TronLink:', error);
         setTronLinkStatus('Connection Error');
+        alert('Error al conectar: ' + (error.message || 'Error desconocido'));
       }
     } else {
       setTronLinkStatus('Not Detected');
-      window.open('https://www.tronlink.org/', '_blank');
+      // Usar un enfoque diferente en lugar de confirm global
+      const wantToInstall = window.confirm('TronLink no detectado. ¿Deseas instalar la extensión TronLink?');
+      if (wantToInstall) {
+        window.open('https://www.tronlink.org/', '_blank');
+      }
     }
   };
   
   // Verificar si TronLink está instalado
   React.useEffect(() => {
+    let checkCount = 0;
+    const maxChecks = 10; // Limitar el número de verificaciones
+    
     const checkTronLink = () => {
-      if (window.tronWeb && window.tronWeb.ready) {
-        setTronLinkStatus('Detected');
+      checkCount++;
+      
+      // Si ya hemos verificado demasiadas veces, detener
+      if (checkCount > maxChecks) {
+        return;
+      }
+      
+      if (window.tronWeb) {
+        try {
+          // Verificar si tronWeb está disponible
+          if (window.tronWeb.defaultAddress) {
+            setTronLinkStatus('Detected');
+            
+            // Si ya está conectado, actualizar la wallet
+            if (window.tronWeb.defaultAddress.base58) {
+              const address = window.tronWeb.defaultAddress.base58;
+              setWallet(address);
+              setTronLinkStatus('Connected');
+              updateWallet(address);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking TronLink:', error);
+        }
       }
     };
     
+    // Verificar inmediatamente
     checkTronLink();
     
-    // Verificar periódicamente
-    const interval = setInterval(checkTronLink, 1000);
+    // Verificar después de un breve retraso para dar tiempo a que TronLink se inicialice
+    const initialTimeout = setTimeout(checkTronLink, 1500);
     
-    return () => clearInterval(interval);
-  }, []);
+    // Verificar periódicamente pero solo unas pocas veces
+    const interval = setInterval(checkTronLink, 5000);
+    
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [updateWallet]);
   
   return (
     <WalletInputContainer>

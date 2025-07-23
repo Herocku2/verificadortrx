@@ -16,31 +16,61 @@ export const UserProvider = ({ children }) => {
     const fetchUserData = async () => {
       if (!wallet) {
         setUser(null);
+        setLoading(false);
         return;
       }
 
       setLoading(true);
+      
+      // Crear un usuario por defecto en caso de que todo falle
+      const defaultUser = {
+        usuario: wallet,
+        username: wallet.substring(0, 6) + '...',
+        tokens_disponibles: 3,
+        plan: 'Free',
+        expira: null
+      };
+      
       try {
+        // Intentar obtener datos del usuario del backend
         const userData = await getUserInfo(wallet);
-        setUser(userData);
-        localStorage.setItem('wallet', wallet);
+        
+        // La función getUserInfo ya maneja los errores de red y devuelve datos en caché o por defecto
+        if (userData) {
+          setUser(userData);
+          localStorage.setItem('wallet', wallet);
+        } else {
+          console.warn('getUserInfo devolvió datos nulos o indefinidos');
+          setUser(defaultUser);
+        }
       } catch (err) {
-        console.error('Error al cargar datos del usuario:', err);
-        setError('No se pudo cargar la información del usuario');
-        // Si hay un error, creamos un usuario con plan gratuito
-        setUser({
-          usuario: wallet,
-          tokens_disponibles: 3,
-          plan: 'Free',
-          expira: null
-        });
+        console.error('Error inesperado al cargar datos del usuario:', err);
+        setError('Error inesperado al cargar datos del usuario');
+        
+        // Intentar recuperar datos del usuario del localStorage
+        const cachedUserData = localStorage.getItem(`user_${wallet}`);
+        if (cachedUserData) {
+          try {
+            setUser(JSON.parse(cachedUserData));
+          } catch (parseErr) {
+            console.error('Error al parsear datos en caché:', parseErr);
+            setUser(defaultUser);
+          }
+        } else {
+          setUser(defaultUser);
+        }
       } finally {
         setLoading(false);
       }
     };
 
+    // Ejecutar fetchUserData solo si hay wallet
     if (wallet) {
       fetchUserData();
+    } else {
+      // Si no hay wallet, asegurarse de que user sea null
+      setUser(null);
+      setLoading(false);
     }
   }, [wallet]);
 

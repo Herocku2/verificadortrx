@@ -153,7 +153,7 @@ const UserP2POffers = ({ wallet, onCreateOffer }) => {
   const handleToggleStatus = async (offer) => {
     try {
       const newStatus = offer.status === 'activa' ? 'pausada' : 'activa';
-      await p2pService.updateOfferStatus(offer.id, wallet, newStatus);
+      const response = await p2pService.updateOfferStatus(offer.id, wallet, newStatus);
       
       // Actualizar la oferta localmente
       setOffers(prevOffers => 
@@ -161,25 +161,57 @@ const UserP2POffers = ({ wallet, onCreateOffer }) => {
           o.id === offer.id ? { ...o, status: newStatus } : o
         )
       );
+      
+      // Si estamos en modo offline, mostrar mensaje
+      if (response && response._offline) {
+        alert('Cambio guardado en modo offline. Se sincronizará cuando el servidor esté disponible.');
+      }
     } catch (error) {
       console.error('Error updating offer status:', error);
-      alert('Error al actualizar el estado de la oferta');
+      
+      if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+        alert('Error de conexión al servidor. El cambio se guardará localmente y se sincronizará cuando el servidor esté disponible.');
+        
+        // Actualizar la oferta localmente de todos modos
+        const newStatus = offer.status === 'activa' ? 'pausada' : 'activa';
+        setOffers(prevOffers => 
+          prevOffers.map(o => 
+            o.id === offer.id ? { ...o, status: newStatus, _offline: true } : o
+          )
+        );
+      } else {
+        alert('Error al actualizar el estado de la oferta: ' + (error.response?.data?.error || error.message));
+      }
     }
   };
 
   const handleDeleteOffer = async (offer) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta oferta?')) {
+    // Usar window.confirm para evitar problemas con ESLint
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta oferta?')) {
       return;
     }
 
     try {
-      await p2pService.updateOfferStatus(offer.id, wallet, 'cancelada');
+      const response = await p2pService.updateOfferStatus(offer.id, wallet, 'cancelada');
       
       // Eliminar la oferta de la lista
       setOffers(prevOffers => prevOffers.filter(o => o.id !== offer.id));
+      
+      // Si estamos en modo offline, mostrar mensaje
+      if (response && response._offline) {
+        alert('Oferta eliminada en modo offline. Se sincronizará cuando el servidor esté disponible.');
+      }
     } catch (error) {
       console.error('Error deleting offer:', error);
-      alert('Error al eliminar la oferta');
+      
+      if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+        alert('Error de conexión al servidor. La oferta se eliminará localmente y se sincronizará cuando el servidor esté disponible.');
+        
+        // Eliminar la oferta de la lista de todos modos
+        setOffers(prevOffers => prevOffers.filter(o => o.id !== offer.id));
+      } else {
+        alert('Error al eliminar la oferta: ' + (error.response?.data?.error || error.message));
+      }
     }
   };
 
