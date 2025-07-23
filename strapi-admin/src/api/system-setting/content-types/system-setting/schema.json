@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "system_settings",
+  "info": {
+    "singularName": "system-setting",
+    "pluralName": "system-settings",
+    "displayName": "System Setting",
+    "description": "System configuration settings"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "value": {
+      "type": "text",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["general", "security", "payment", "api", "notification", "p2p"],
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "data_type": {
+      "type": "enumeration",
+      "enum": ["string", "number", "boolean", "json"],
+      "default": "string",
+      "required": true
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_encrypted": {
+      "type": "boolean",
+      "default": false
+    },
+    "updated_by": {
+      "type": "string"
+    }
+  }
+}

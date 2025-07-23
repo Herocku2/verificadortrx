@@ -342,3 +342,111 @@ export const getResellerStats = async (wallet) => {
     throw error;
   }
 };
+
+// ===== FUNCIONES P2P =====
+
+// Obtener ofertas P2P por país
+export const getP2POffers = async (country, filters = {}) => {
+  try {
+    const response = await apiClient.get(`/p2p/offers/country/${country}`, {
+      params: filters
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener ofertas P2P:', error);
+    throw error;
+  }
+};
+
+// Crear nueva oferta P2P
+export const createP2POffer = async (offerData) => {
+  try {
+    const response = await apiClient.post('/p2p/offers', offerData);
+    return response.data;
+  } catch (error) {
+    console.error('Error al crear oferta P2P:', error);
+    throw error;
+  }
+};
+
+// Obtener países disponibles para P2P
+export const getP2PCountries = async () => {
+  try {
+    const response = await apiClient.get('/p2p/countries');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener países P2P:', error);
+    throw error;
+  }
+};
+
+// Obtener bancos por país
+export const getBanksByCountry = async (countryCode) => {
+  try {
+    const response = await apiClient.get(`/p2p/banks/${countryCode}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener bancos por país:', error);
+    throw error;
+  }
+};
+
+// Crear orden P2P
+export const createP2POrder = async (orderData) => {
+  try {
+    const response = await apiClient.post('/p2p/orders', orderData);
+    return response.data;
+  } catch (error) {
+    console.error('Error al crear orden P2P:', error);
+    throw error;
+  }
+};
+
+// Obtener órdenes P2P del usuario
+export const getUserP2POrders = async (wallet) => {
+  try {
+    const response = await apiClient.get(`/p2p/orders/user/${wallet}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener órdenes P2P del usuario:', error);
+    throw error;
+  }
+};
+
+// Actualizar estado de orden P2P
+export const updateP2POrderStatus = async (orderId, status, data = {}) => {
+  try {
+    const response = await apiClient.put(`/p2p/orders/${orderId}/status`, {
+      status,
+      ...data
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar estado de orden P2P:', error);
+    throw error;
+  }
+};
+
+// Obtener chat de orden P2P
+export const getP2POrderChat = async (orderId) => {
+  try {
+    const response = await apiClient.get(`/p2p/orders/${orderId}/chat`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener chat de orden P2P:', error);
+    throw error;
+  }
+};
+
+// Enviar mensaje en chat P2P
+export const sendP2PChatMessage = async (orderId, message) => {
+  try {
+    const response = await apiClient.post(`/p2p/orders/${orderId}/chat`, {
+      message
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al enviar mensaje en chat P2P:', error);
+    throw error;
+  }
+};

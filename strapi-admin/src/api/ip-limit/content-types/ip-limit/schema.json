@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ip_limits",
+  "info": {
+    "singularName": "ip-limit",
+    "pluralName": "ip-limits",
+    "displayName": "IP Limit",
+    "description": "IP-based rate limiting for free users"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ip_address": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "scan_count": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "daily_limit": {
+      "type": "integer",
+      "default": 3,
+      "min": 1
+    },
+    "reset_time": {
+      "type": "datetime",
+      "required": true
+    },
+    "first_scan": {
+      "type": "datetime"
+    },
+    "last_scan": {
+      "type": "datetime"
+    },
+    "is_blocked": {
+      "type": "boolean",
+      "default": false
+    },
+    "block_reason": {
+      "type": "text"
+    },
+    "country": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "text"
+    }
+  }
+}

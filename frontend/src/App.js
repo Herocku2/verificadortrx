@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUser } from './context/UserContext';
 import { isAdminWallet } from './services/api';
-import TestComponent from './TestComponent';
+
 
 // Componentes
 import Navbar from './components/Navbar';
@@ -16,6 +16,8 @@ import PricingPage from './pages/PricingPage';
 import ResultsPage from './pages/ResultsPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentCancelPage from './pages/PaymentCancelPage';
+import P2PPage from './pages/P2PPage';
+import P2PTradeDetailPage from './pages/P2PTradeDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Páginas de administración
@@ -64,6 +66,8 @@ function App() {
           <Route path="/results/:wallet" element={<ResultsPage />} />
           <Route path="/payment/success" element={<PaymentSuccessPage />} />
           <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+          <Route path="/p2p" element={<P2PPage />} />
+          <Route path="/p2p/trade/:offerId" element={<P2PTradeDetailPage />} />
           
           {/* Rutas de administración */}
           <Route path="/admin" element={

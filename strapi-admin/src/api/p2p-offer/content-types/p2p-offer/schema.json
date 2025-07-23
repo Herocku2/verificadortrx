@@ -1,0 +1,134 @@
+{
+  "kind": "collectionType",
+  "collectionName": "p2p_offers",
+  "info": {
+    "singularName": "p2p-offer",
+    "pluralName": "p2p-offers",
+    "displayName": "P2P Offer",
+    "description": "Ofertas de compra/venta P2P de USDT por país y banco"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "wallet": {
+      "type": "string",
+      "required": true,
+      "maxLength": 34,
+      "minLength": 34
+    },
+    "tipo": {
+      "type": "enumeration",
+      "enum": ["compra", "venta"],
+      "required": true
+    },
+    "precio_usdt": {
+      "type": "decimal",
+      "required": true,
+      "min": 0.1
+    },
+    "cantidad_min": {
+      "type": "decimal",
+      "required": true,
+      "min": 1
+    },
+    "cantidad_max": {
+      "type": "decimal",
+      "required": true,
+      "min": 1
+    },
+    "pais_codigo": {
+      "type": "string",
+      "required": true,
+      "maxLength": 2,
+      "minLength": 2
+    },
+    "moneda_local": {
+      "type": "string",
+      "required": true,
+      "maxLength": 3,
+      "minLength": 3
+    },
+    "metodo_pago": {
+      "type": "enumeration",
+      "enum": ["transferencia_bancaria", "efectivo", "billetera_digital", "tarjeta_credito", "tarjeta_debito", "otro"],
+      "default": "transferencia_bancaria",
+      "required": true
+    },
+    "banco_nombre": {
+      "type": "string",
+      "required": false
+    },
+    "banco_swift": {
+      "type": "string",
+      "required": false
+    },
+    "datos_bancarios": {
+      "type": "json",
+      "description": "Información bancaria del vendedor (número de cuenta, titular, etc.)"
+    },
+    "billetera_digital": {
+      "type": "json",
+      "description": "Información de billetera digital (Nequi, Daviplata, etc.)"
+    },
+    "descripcion": {
+      "type": "text"
+    },
+    "instrucciones": {
+      "type": "text",
+      "description": "Instrucciones específicas para el pago"
+    },
+    "tiempo_limite": {
+      "type": "integer",
+      "required": true,
+      "min": 5,
+      "max": 60,
+      "default": 30
+    },
+    "reputacion_minima": {
+      "type": "integer",
+      "default": 0,
+      "description": "Reputación mínima requerida del comprador"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["activa", "pausada", "completada", "cancelada"],
+      "default": "activa"
+    },
+    "puntuacion_reputacion": {
+      "type": "decimal",
+      "default": 5.0,
+      "min": 0,
+      "max": 5
+    },
+    "trades_completados": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "tasa_exito": {
+      "type": "decimal",
+      "default": 100.0,
+      "min": 0,
+      "max": 100
+    },
+    "verificado": {
+      "type": "boolean",
+      "default": false
+    },
+    "ip_creacion": {
+      "type": "string",
+      "required": false
+    },
+    "ultima_actividad": {
+      "type": "datetime"
+    },
+    "ordenes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::p2p-order.p2p-order",
+      "mappedBy": "oferta"
+    }
+  }
+}

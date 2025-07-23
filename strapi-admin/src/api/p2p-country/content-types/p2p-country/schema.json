@@ -1,0 +1,76 @@
+{
+  "kind": "collectionType",
+  "collectionName": "p2p_countries",
+  "info": {
+    "singularName": "p2p-country",
+    "pluralName": "p2p-countries",
+    "displayName": "P2P Country",
+    "description": "Países disponibles para P2P trading"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "nombre_oficial": {
+      "type": "string",
+      "required": true
+    },
+    "codigo_iso2": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 2,
+      "minLength": 2
+    },
+    "codigo_iso3": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 3,
+      "minLength": 3
+    },
+    "codigo_telefonico": {
+      "type": "string",
+      "required": true
+    },
+    "moneda_codigo": {
+      "type": "string",
+      "required": true
+    },
+    "moneda_nombre": {
+      "type": "string",
+      "required": true
+    },
+    "moneda_simbolo": {
+      "type": "string",
+      "required": true
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "rangos_ip": {
+      "type": "json",
+      "required": false
+    },
+    "bancos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::p2p-bank.p2p-bank",
+      "mappedBy": "pais"
+    },
+    "ofertas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::p2p-offer.p2p-offer",
+      "mappedBy": "pais"
+    }
+  }
+}

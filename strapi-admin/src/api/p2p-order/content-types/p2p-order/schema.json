@@ -1,0 +1,124 @@
+{
+  "kind": "collectionType",
+  "collectionName": "p2p_orders",
+  "info": {
+    "singularName": "p2p-order",
+    "pluralName": "p2p-orders",
+    "displayName": "P2P Order",
+    "description": "Órdenes de trading P2P entre usuarios"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order_id": {
+      "type": "uid",
+      "targetField": "order_id"
+    },
+    "oferta": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::p2p-offer.p2p-offer",
+      "inversedBy": "ordenes"
+    },
+    "wallet_comprador": {
+      "type": "string",
+      "required": true,
+      "maxLength": 34,
+      "minLength": 34
+    },
+    "wallet_vendedor": {
+      "type": "string",
+      "required": true,
+      "maxLength": 34,
+      "minLength": 34
+    },
+    "cantidad_usdt": {
+      "type": "decimal",
+      "required": true,
+      "min": 1
+    },
+    "cantidad_fiat": {
+      "type": "decimal",
+      "required": true,
+      "min": 1
+    },
+    "precio_acordado": {
+      "type": "decimal",
+      "required": true,
+      "min": 0.1
+    },
+    "moneda_fiat": {
+      "type": "string",
+      "required": true,
+      "maxLength": 3,
+      "minLength": 3
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["pendiente", "pagado", "confirmado", "completado", "disputado", "cancelado"],
+      "default": "pendiente",
+      "required": true
+    },
+    "metodo_pago_usado": {
+      "type": "string",
+      "required": true
+    },
+    "datos_pago": {
+      "type": "json",
+      "description": "Información del pago realizado"
+    },
+    "comprobante_pago": {
+      "type": "string",
+      "description": "URL o hash del comprobante de pago"
+    },
+    "tiempo_limite": {
+      "type": "datetime",
+      "required": true
+    },
+    "fecha_pago": {
+      "type": "datetime"
+    },
+    "fecha_confirmacion": {
+      "type": "datetime"
+    },
+    "fecha_completado": {
+      "type": "datetime"
+    },
+    "notas_comprador": {
+      "type": "text"
+    },
+    "notas_vendedor": {
+      "type": "text"
+    },
+    "disputa_razon": {
+      "type": "text"
+    },
+    "disputa_resolucion": {
+      "type": "text"
+    },
+    "calificacion_comprador": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+    },
+    "calificacion_vendedor": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+    },
+    "comentario_comprador": {
+      "type": "text"
+    },
+    "comentario_vendedor": {
+      "type": "text"
+    },
+    "chat_messages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::p2p-chat.p2p-chat",
+      "mappedBy": "order"
+    }
+  }
+}

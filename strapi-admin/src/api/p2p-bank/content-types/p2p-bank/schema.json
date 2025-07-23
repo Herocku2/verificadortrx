@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "p2p_banks",
+  "info": {
+    "singularName": "p2p-bank",
+    "pluralName": "p2p-banks",
+    "displayName": "P2P Bank",
+    "description": "Bancos disponibles para P2P trading por país"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    },
+    "swift": {
+      "type": "string",
+      "required": false
+    },
+    "ciudad": {
+      "type": "string",
+      "required": false
+    },
+    "tipo": {
+      "type": "enumeration",
+      "enum": ["Comercial", "Digital", "Público", "Inversión", "Cooperativo"],
+      "default": "Comercial",
+      "required": true
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "logo_url": {
+      "type": "string",
+      "required": false
+    },
+    "pais": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::p2p-country.p2p-country",
+      "inversedBy": "bancos"
+    },
+    "ofertas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::p2p-offer.p2p-offer",
+      "mappedBy": "banco"
+    }
+  }
+}

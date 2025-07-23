@@ -1,0 +1,71 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scan_histories",
+  "info": {
+    "singularName": "scan-history",
+    "pluralName": "scan-histories",
+    "displayName": "Scan History",
+    "description": "History of wallet scans performed by users"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user_wallet": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-wallet.user-wallet",
+      "inversedBy": "scan_history"
+    },
+    "scanned_wallet": {
+      "type": "string",
+      "required": true,
+      "minLength": 34,
+      "maxLength": 34,
+      "regex": "^T[A-Za-z0-9]{33}$"
+    },
+    "scan_type": {
+      "type": "enumeration",
+      "enum": ["instant", "comprehensive", "risk"],
+      "default": "instant",
+      "required": true
+    },
+    "risk_level": {
+      "type": "enumeration",
+      "enum": ["Low", "Medium", "High"],
+      "required": true
+    },
+    "risk_score": {
+      "type": "integer",
+      "min": 0,
+      "max": 100
+    },
+    "blacklist_events": {
+      "type": "json"
+    },
+    "connected_wallets": {
+      "type": "json"
+    },
+    "transaction_analysis": {
+      "type": "json"
+    },
+    "forensic_report": {
+      "type": "json"
+    },
+    "scan_duration": {
+      "type": "integer",
+      "default": 0
+    },
+    "tokens_consumed": {
+      "type": "integer",
+      "default": 1
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "text"
+    }
+  }
+}

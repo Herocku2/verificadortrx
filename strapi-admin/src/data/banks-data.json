@@ -1,0 +1,478 @@
+{
+  "countries": {
+    "CO": {
+      "name": "Colombia",
+      "currency": "COP",
+      "currency_name": "Peso Colombiano",
+      "banks": [
+        {
+          "name": "Bancolombia",
+          "swift": "COLOCOBM",
+          "code": "1007",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco de Bogotá",
+          "swift": "BBOPCOBM",
+          "code": "1001",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Popular",
+          "swift": "BPOPCOBC",
+          "code": "1002",
+          "type": "commercial"
+        },
+        {
+          "name": "BBVA Colombia",
+          "swift": "BBVACOBM",
+          "code": "1013",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Davivienda",
+          "swift": "DAVICOBM",
+          "code": "1051",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco de Occidente",
+          "swift": "OCCICOBM",
+          "code": "1023",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Caja Social",
+          "swift": "BCSCCOBC",
+          "code": "1032",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Agrario",
+          "swift": "BACRCOBM",
+          "code": "1040",
+          "type": "government"
+        },
+        {
+          "name": "Nequi",
+          "swift": "NEQUCOBM",
+          "code": "1507",
+          "type": "digital"
+        },
+        {
+          "name": "Daviplata",
+          "swift": "DAVICOBM",
+          "code": "1551",
+          "type": "digital"
+        }
+      ]
+    },
+    "MX": {
+      "name": "México",
+      "currency": "MXN",
+      "currency_name": "Peso Mexicano",
+      "banks": [
+        {
+          "name": "BBVA México",
+          "swift": "BCMRMXMM",
+          "code": "012180",
+          "type": "commercial"
+        },
+        {
+          "name": "Banamex",
+          "swift": "BNMXMXMM",
+          "code": "002180",
+          "type": "commercial"
+        },
+        {
+          "name": "Santander México",
+          "swift": "BMSXMXMM",
+          "code": "014180",
+          "type": "commercial"
+        },
+        {
+          "name": "Banorte",
+          "swift": "MENOMXMT",
+          "code": "072180",
+          "type": "commercial"
+        },
+        {
+          "name": "HSBC México",
+          "swift": "BIMEMXMM",
+          "code": "021180",
+          "type": "commercial"
+        },
+        {
+          "name": "Scotiabank México",
+          "swift": "NOSCMXMM",
+          "code": "044180",
+          "type": "commercial"
+        },
+        {
+          "name": "Inbursa",
+          "swift": "INVEMXMM",
+          "code": "036180",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Azteca",
+          "swift": "BCAZMXMM",
+          "code": "127180",
+          "type": "commercial"
+        }
+      ]
+    },
+    "AR": {
+      "name": "Argentina",
+      "currency": "ARS",
+      "currency_name": "Peso Argentino",
+      "banks": [
+        {
+          "name": "Banco Nación",
+          "swift": "NACNARBM",
+          "code": "011",
+          "type": "government"
+        },
+        {
+          "name": "Banco Provincia",
+          "swift": "PRBAARBM",
+          "code": "014",
+          "type": "government"
+        },
+        {
+          "name": "Banco Santander Río",
+          "swift": "BSCHARBM",
+          "code": "072",
+          "type": "commercial"
+        },
+        {
+          "name": "BBVA Argentina",
+          "swift": "BBVAARBM",
+          "code": "017",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Galicia",
+          "swift": "GABAARBA",
+          "code": "007",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Macro",
+          "swift": "MACRARBA",
+          "code": "285",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Supervielle",
+          "swift": "SPVLARBM",
+          "code": "027",
+          "type": "commercial"
+        },
+        {
+          "name": "Mercado Pago",
+          "swift": "MERPARBM",
+          "code": "323",
+          "type": "digital"
+        }
+      ]
+    },
+    "VE": {
+      "name": "Venezuela",
+      "currency": "VES",
+      "currency_name": "Bolívar Soberano",
+      "banks": [
+        {
+          "name": "Banco de Venezuela",
+          "swift": "BVENBVCS",
+          "code": "0102",
+          "type": "government"
+        },
+        {
+          "name": "Banesco",
+          "swift": "BANVBVCS",
+          "code": "0134",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Mercantil",
+          "swift": "MERBVECS",
+          "code": "0105",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Provincial",
+          "swift": "PROVBVCS",
+          "code": "0108",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Exterior",
+          "swift": "EXTEBVCS",
+          "code": "0115",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Plaza",
+          "swift": "PLAZAVCS",
+          "code": "0138",
+          "type": "commercial"
+        }
+      ]
+    },
+    "PE": {
+      "name": "Perú",
+      "currency": "PEN",
+      "currency_name": "Sol Peruano",
+      "banks": [
+        {
+          "name": "Banco de Crédito del Perú",
+          "swift": "BCPLPEPL",
+          "code": "002",
+          "type": "commercial"
+        },
+        {
+          "name": "BBVA Perú",
+          "swift": "BCONPEPL",
+          "code": "011",
+          "type": "commercial"
+        },
+        {
+          "name": "Scotiabank Perú",
+          "swift": "SCBLPEPL",
+          "code": "009",
+          "type": "commercial"
+        },
+        {
+          "name": "Interbank",
+          "swift": "BINPPEPL",
+          "code": "003",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco de la Nación",
+          "swift": "NACIPEPL",
+          "code": "018",
+          "type": "government"
+        },
+        {
+          "name": "BanBif",
+          "swift": "BIFIPEPL",
+          "code": "038",
+          "type": "commercial"
+        }
+      ]
+    },
+    "CL": {
+      "name": "Chile",
+      "currency": "CLP",
+      "currency_name": "Peso Chileno",
+      "banks": [
+        {
+          "name": "Banco de Chile",
+          "swift": "BCHICLRM",
+          "code": "001",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Santander Chile",
+          "swift": "BSCHCLRM",
+          "code": "037",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Estado",
+          "swift": "BECHCLRM",
+          "code": "012",
+          "type": "government"
+        },
+        {
+          "name": "Banco BCI",
+          "swift": "CREDCLRM",
+          "code": "016",
+          "type": "commercial"
+        },
+        {
+          "name": "Scotiabank Chile",
+          "swift": "SCBLCLRM",
+          "code": "014",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Itaú Chile",
+          "swift": "ITAUCLRM",
+          "code": "039",
+          "type": "commercial"
+        }
+      ]
+    },
+    "BR": {
+      "name": "Brasil",
+      "currency": "BRL",
+      "currency_name": "Real Brasileño",
+      "banks": [
+        {
+          "name": "Banco do Brasil",
+          "swift": "BRASBRRJ",
+          "code": "001",
+          "type": "government"
+        },
+        {
+          "name": "Itaú Unibanco",
+          "swift": "ITAUBRSP",
+          "code": "341",
+          "type": "commercial"
+        },
+        {
+          "name": "Bradesco",
+          "swift": "BBDEBRSP",
+          "code": "237",
+          "type": "commercial"
+        },
+        {
+          "name": "Santander Brasil",
+          "swift": "BSCHBRSP",
+          "code": "033",
+          "type": "commercial"
+        },
+        {
+          "name": "Caixa Econômica Federal",
+          "swift": "CEFXBRSP",
+          "code": "104",
+          "type": "government"
+        },
+        {
+          "name": "Nubank",
+          "swift": "NUBKBRSP",
+          "code": "260",
+          "type": "digital"
+        }
+      ]
+    },
+    "US": {
+      "name": "Estados Unidos",
+      "currency": "USD",
+      "currency_name": "Dólar Estadounidense",
+      "banks": [
+        {
+          "name": "JPMorgan Chase",
+          "swift": "CHASUS33",
+          "code": "021000021",
+          "type": "commercial"
+        },
+        {
+          "name": "Bank of America",
+          "swift": "BOFAUS3N",
+          "code": "026009593",
+          "type": "commercial"
+        },
+        {
+          "name": "Wells Fargo",
+          "swift": "WFBIUS6S",
+          "code": "121000248",
+          "type": "commercial"
+        },
+        {
+          "name": "Citibank",
+          "swift": "CITIUS33",
+          "code": "021000089",
+          "type": "commercial"
+        },
+        {
+          "name": "Zelle",
+          "swift": "ZELLUS33",
+          "code": "ZELLE",
+          "type": "digital"
+        }
+      ]
+    },
+    "ES": {
+      "name": "España",
+      "currency": "EUR",
+      "currency_name": "Euro",
+      "banks": [
+        {
+          "name": "Banco Santander",
+          "swift": "BSCHESMM",
+          "code": "0049",
+          "type": "commercial"
+        },
+        {
+          "name": "BBVA España",
+          "swift": "BBVAESMM",
+          "code": "0182",
+          "type": "commercial"
+        },
+        {
+          "name": "CaixaBank",
+          "swift": "CAIXESBB",
+          "code": "2100",
+          "type": "commercial"
+        },
+        {
+          "name": "Banco Sabadell",
+          "swift": "BSABESBB",
+          "code": "0081",
+          "type": "commercial"
+        },
+        {
+          "name": "Bankinter",
+          "swift": "BKBKESMM",
+          "code": "0128",
+          "type": "commercial"
+        }
+      ]
+    },
+    "JP": {
+      "name": "Japón",
+      "currency": "JPY",
+      "currency_name": "Yen Japonés",
+      "banks": [
+        {
+          "name": "Mitsubishi UFJ Bank",
+          "swift": "BOTKJPJT",
+          "code": "0005",
+          "type": "commercial"
+        },
+        {
+          "name": "Sumitomo Mitsui Banking",
+          "swift": "SMBCJPJT",
+          "code": "0009",
+          "type": "commercial"
+        },
+        {
+          "name": "Mizuho Bank",
+          "swift": "MHCBJPJT",
+          "code": "0001",
+          "type": "commercial"
+        }
+      ]
+    }
+  },
+  "payment_methods": [
+    {
+      "id": "bank_transfer",
+      "name": "Transferencia Bancaria",
+      "icon": "🏦",
+      "description": "Transferencia directa entre cuentas bancarias"
+    },
+    {
+      "id": "digital_wallet",
+      "name": "Billetera Digital",
+      "icon": "📱",
+      "description": "Pagos a través de aplicaciones móviles"
+    },
+    {
+      "id": "cash_deposit",
+      "name": "Depósito en Efectivo",
+      "icon": "💵",
+      "description": "Depósito en efectivo en sucursal bancaria"
+    },
+    {
+      "id": "online_banking",
+      "name": "Banca en Línea",
+      "icon": "💻",
+      "description": "Transferencia a través de banca por internet"
+    }
+  ]
+}

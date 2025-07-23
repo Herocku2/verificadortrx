@@ -1,0 +1,526 @@
+{
+  "CO": {
+    "nombre": "Colombia",
+    "nombre_oficial": "República de Colombia",
+    "codigo_iso2": "CO",
+    "codigo_iso3": "COL",
+    "codigo_telefonico": "+57",
+    "moneda": {
+      "codigo": "COP",
+      "nombre": "Peso Colombiano",
+      "simbolo": "$"
+    },
+    "bancos": [
+      {
+        "nombre": "Bancolombia",
+        "swift": "COLOCOBM",
+        "ciudad": "Medellín",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco de Bogotá",
+        "swift": "BOGACOBB",
+        "ciudad": "Bogotá",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Popular",
+        "swift": "BPOPCOBC",
+        "ciudad": "Bogotá",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "BBVA Colombia",
+        "swift": "BBVACOBB",
+        "ciudad": "Bogotá",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Davivienda",
+        "swift": "DAVICOBB",
+        "ciudad": "Bogotá",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Nequi",
+        "swift": "COLOCOBM",
+        "ciudad": "Medellín",
+        "tipo": "Digital"
+      },
+      {
+        "nombre": "Daviplata",
+        "swift": "DAVICOBB",
+        "ciudad": "Bogotá",
+        "tipo": "Digital"
+      }
+    ],
+    "rangos_ip": [
+      "179.7.0.0/16",
+      "190.26.0.0/15",
+      "181.129.0.0/16",
+      "200.21.0.0/16"
+    ]
+  },
+  "MX": {
+    "nombre": "México",
+    "nombre_oficial": "Estados Unidos Mexicanos",
+    "codigo_iso2": "MX",
+    "codigo_iso3": "MEX",
+    "codigo_telefonico": "+52",
+    "moneda": {
+      "codigo": "MXN",
+      "nombre": "Peso Mexicano",
+      "simbolo": "$"
+    },
+    "bancos": [
+      {
+        "nombre": "BBVA México",
+        "swift": "BCMRMXMM",
+        "ciudad": "Ciudad de México",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banamex",
+        "swift": "BNMXMXMM",
+        "ciudad": "Ciudad de México",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Santander México",
+        "swift": "BMSXMXMM",
+        "ciudad": "Ciudad de México",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banorte",
+        "swift": "MENOMXMT",
+        "ciudad": "Monterrey",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "HSBC México",
+        "swift": "BIMEMXMM",
+        "ciudad": "Ciudad de México",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Azteca",
+        "swift": "BCAZXMXM",
+        "ciudad": "Ciudad de México",
+        "tipo": "Comercial"
+      }
+    ],
+    "rangos_ip": [
+      "187.141.0.0/16",
+      "201.131.0.0/16",
+      "189.203.0.0/16",
+      "200.57.0.0/16"
+    ]
+  },
+  "AR": {
+    "nombre": "Argentina",
+    "nombre_oficial": "República Argentina",
+    "codigo_iso2": "AR",
+    "codigo_iso3": "ARG",
+    "codigo_telefonico": "+54",
+    "moneda": {
+      "codigo": "ARS",
+      "nombre": "Peso Argentino",
+      "simbolo": "$"
+    },
+    "bancos": [
+      {
+        "nombre": "Banco Nación",
+        "swift": "NACNARBAXXX",
+        "ciudad": "Buenos Aires",
+        "tipo": "Público"
+      },
+      {
+        "nombre": "Banco Santander Río",
+        "swift": "BSCHARBAXXX",
+        "ciudad": "Buenos Aires",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "BBVA Argentina",
+        "swift": "FRANCARBAXXX",
+        "ciudad": "Buenos Aires",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Galicia",
+        "swift": "GABAARBA",
+        "ciudad": "Buenos Aires",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Macro",
+        "swift": "MACRARBA",
+        "ciudad": "Buenos Aires",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Mercado Pago",
+        "swift": "GABAARBA",
+        "ciudad": "Buenos Aires",
+        "tipo": "Digital"
+      }
+    ],
+    "rangos_ip": [
+      "190.210.0.0/15",
+      "181.31.0.0/16",
+      "200.51.0.0/16",
+      "186.33.0.0/16"
+    ]
+  },
+  "VE": {
+    "nombre": "Venezuela",
+    "nombre_oficial": "República Bolivariana de Venezuela",
+    "codigo_iso2": "VE",
+    "codigo_iso3": "VEN",
+    "codigo_telefonico": "+58",
+    "moneda": {
+      "codigo": "VES",
+      "nombre": "Bolívar Soberano",
+      "simbolo": "Bs.S"
+    },
+    "bancos": [
+      {
+        "nombre": "Banco de Venezuela",
+        "swift": "BANVVECA",
+        "ciudad": "Caracas",
+        "tipo": "Público"
+      },
+      {
+        "nombre": "Banesco",
+        "swift": "BANSVECA",
+        "ciudad": "Caracas",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Mercantil",
+        "swift": "BAMEVECA",
+        "ciudad": "Caracas",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Provincial",
+        "swift": "BBVAVECA",
+        "ciudad": "Caracas",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Bicentenario",
+        "swift": "BICEVECA",
+        "ciudad": "Caracas",
+        "tipo": "Público"
+      }
+    ],
+    "rangos_ip": [
+      "190.202.0.0/16",
+      "201.249.0.0/16",
+      "186.95.0.0/16",
+      "200.109.0.0/16"
+    ]
+  },
+  "PE": {
+    "nombre": "Perú",
+    "nombre_oficial": "República del Perú",
+    "codigo_iso2": "PE",
+    "codigo_iso3": "PER",
+    "codigo_telefonico": "+51",
+    "moneda": {
+      "codigo": "PEN",
+      "nombre": "Sol Peruano",
+      "simbolo": "S/"
+    },
+    "bancos": [
+      {
+        "nombre": "Banco de Crédito del Perú",
+        "swift": "BCPLPEPL",
+        "ciudad": "Lima",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "BBVA Perú",
+        "swift": "BCONPEPL",
+        "ciudad": "Lima",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Interbank",
+        "swift": "BINPPEPL",
+        "ciudad": "Lima",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Scotiabank Perú",
+        "swift": "SCBLPEPL",
+        "ciudad": "Lima",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Pichincha",
+        "swift": "PICPPEPL",
+        "ciudad": "Lima",
+        "tipo": "Comercial"
+      }
+    ],
+    "rangos_ip": [
+      "190.119.0.0/16",
+      "200.48.0.0/16",
+      "181.176.0.0/16",
+      "186.160.0.0/16"
+    ]
+  },
+  "CL": {
+    "nombre": "Chile",
+    "nombre_oficial": "República de Chile",
+    "codigo_iso2": "CL",
+    "codigo_iso3": "CHL",
+    "codigo_telefonico": "+56",
+    "moneda": {
+      "codigo": "CLP",
+      "nombre": "Peso Chileno",
+      "simbolo": "$"
+    },
+    "bancos": [
+      {
+        "nombre": "Banco de Chile",
+        "swift": "BCHICLRM",
+        "ciudad": "Santiago",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Santander Chile",
+        "swift": "BSCHCLRM",
+        "ciudad": "Santiago",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Estado",
+        "swift": "BECHCLRM",
+        "ciudad": "Santiago",
+        "tipo": "Público"
+      },
+      {
+        "nombre": "Banco BCI",
+        "swift": "CREDCLRM",
+        "ciudad": "Santiago",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Falabella",
+        "swift": "FABACLRM",
+        "ciudad": "Santiago",
+        "tipo": "Comercial"
+      }
+    ],
+    "rangos_ip": [
+      "190.161.0.0/16",
+      "200.54.0.0/16",
+      "181.162.0.0/16",
+      "186.67.0.0/16"
+    ]
+  },
+  "EC": {
+    "nombre": "Ecuador",
+    "nombre_oficial": "República del Ecuador",
+    "codigo_iso2": "EC",
+    "codigo_iso3": "ECU",
+    "codigo_telefonico": "+593",
+    "moneda": {
+      "codigo": "USD",
+      "nombre": "Dólar Estadounidense",
+      "simbolo": "$"
+    },
+    "bancos": [
+      {
+        "nombre": "Banco Pichincha",
+        "swift": "PICHECEG",
+        "ciudad": "Quito",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco del Pacífico",
+        "swift": "PACIECEG",
+        "ciudad": "Guayaquil",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Guayaquil",
+        "swift": "BGUAECEG",
+        "ciudad": "Guayaquil",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Produbanco",
+        "swift": "PRDUECEG",
+        "ciudad": "Quito",
+        "tipo": "Comercial"
+      }
+    ],
+    "rangos_ip": [
+      "190.15.0.0/16",
+      "200.93.0.0/16",
+      "181.198.0.0/16",
+      "186.46.0.0/16"
+    ]
+  },
+  "BR": {
+    "nombre": "Brasil",
+    "nombre_oficial": "República Federativa do Brasil",
+    "codigo_iso2": "BR",
+    "codigo_iso3": "BRA",
+    "codigo_telefonico": "+55",
+    "moneda": {
+      "codigo": "BRL",
+      "nombre": "Real Brasileño",
+      "simbolo": "R$"
+    },
+    "bancos": [
+      {
+        "nombre": "Banco do Brasil",
+        "swift": "BRASBRRJ",
+        "ciudad": "Brasília",
+        "tipo": "Público"
+      },
+      {
+        "nombre": "Itaú Unibanco",
+        "swift": "ITAUBRSP",
+        "ciudad": "São Paulo",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Bradesco",
+        "swift": "BBDEBRSP",
+        "ciudad": "São Paulo",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Santander Brasil",
+        "swift": "BSCHBRSP",
+        "ciudad": "São Paulo",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Nubank",
+        "swift": "NUBKBRSP",
+        "ciudad": "São Paulo",
+        "tipo": "Digital"
+      },
+      {
+        "nombre": "Banco Inter",
+        "swift": "BICNBRSP",
+        "ciudad": "Belo Horizonte",
+        "tipo": "Digital"
+      }
+    ],
+    "rangos_ip": [
+      "189.0.0.0/8",
+      "177.0.0.0/8",
+      "201.0.0.0/8",
+      "186.192.0.0/10"
+    ]
+  },
+  "ES": {
+    "nombre": "España",
+    "nombre_oficial": "Reino de España",
+    "codigo_iso2": "ES",
+    "codigo_iso3": "ESP",
+    "codigo_telefonico": "+34",
+    "moneda": {
+      "codigo": "EUR",
+      "nombre": "Euro",
+      "simbolo": "€"
+    },
+    "bancos": [
+      {
+        "nombre": "Banco Santander",
+        "swift": "BSCHESMM",
+        "ciudad": "Madrid",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "BBVA",
+        "swift": "BBVAESMM",
+        "ciudad": "Madrid",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "CaixaBank",
+        "swift": "CAIXESBB",
+        "ciudad": "Barcelona",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Banco Sabadell",
+        "swift": "BSABESBB",
+        "ciudad": "Barcelona",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Bankinter",
+        "swift": "BKBKESMM",
+        "ciudad": "Madrid",
+        "tipo": "Comercial"
+      }
+    ],
+    "rangos_ip": [
+      "85.0.0.0/8",
+      "88.0.0.0/8",
+      "213.0.0.0/8",
+      "80.0.0.0/8"
+    ]
+  },
+  "US": {
+    "nombre": "Estados Unidos",
+    "nombre_oficial": "United States of America",
+    "codigo_iso2": "US",
+    "codigo_iso3": "USA",
+    "codigo_telefonico": "+1",
+    "moneda": {
+      "codigo": "USD",
+      "nombre": "Dólar Estadounidense",
+      "simbolo": "$"
+    },
+    "bancos": [
+      {
+        "nombre": "JPMorgan Chase",
+        "swift": "CHASUS33",
+        "ciudad": "New York",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Bank of America",
+        "swift": "BOFAUS3N",
+        "ciudad": "Charlotte",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Wells Fargo",
+        "swift": "WFBIUS6S",
+        "ciudad": "San Francisco",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Citibank",
+        "swift": "CITIUS33",
+        "ciudad": "New York",
+        "tipo": "Comercial"
+      },
+      {
+        "nombre": "Goldman Sachs",
+        "swift": "GSCCUS33",
+        "ciudad": "New York",
+        "tipo": "Inversión"
+      }
+    ],
+    "rangos_ip": [
+      "8.0.0.0/8",
+      "4.0.0.0/8",
+      "12.0.0.0/8",
+      "24.0.0.0/8"
+    ]
+  }
+}

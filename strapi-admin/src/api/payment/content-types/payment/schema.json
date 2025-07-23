@@ -1,0 +1,82 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payments",
+  "info": {
+    "singularName": "payment",
+    "pluralName": "payments",
+    "displayName": "Payment",
+    "description": "Payment transactions for plan upgrades"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "payment_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "user_wallet": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-wallet.user-wallet",
+      "inversedBy": "payments"
+    },
+    "plan_type": {
+      "type": "enumeration",
+      "enum": ["Basic", "Intermedio", "Premium", "Unlimited"],
+      "required": true
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "string",
+      "required": true,
+      "default": "USD"
+    },
+    "crypto_currency": {
+      "type": "string"
+    },
+    "crypto_amount": {
+      "type": "decimal"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "completed", "failed", "cancelled", "expired"],
+      "default": "pending",
+      "required": true
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "transaction_hash": {
+      "type": "string"
+    },
+    "nowpayments_id": {
+      "type": "string"
+    },
+    "payment_url": {
+      "type": "text"
+    },
+    "tokens_granted": {
+      "type": "integer",
+      "default": 0
+    },
+    "bonus_tokens": {
+      "type": "integer",
+      "default": 0
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "completed_at": {
+      "type": "datetime"
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

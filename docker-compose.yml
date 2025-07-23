@@ -1,22 +1,70 @@
 version: '3.8'
 
 services:
-  # Frontend service
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: trxguardian-frontend
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: trxguardian-postgres
     ports:
-      - "5173:5173"
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=trxguardian_admin
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - trxguardian-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis service for caching and sessions
+  redis:
+    image: redis:alpine
+    container_name: trxguardian-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - trxguardian-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Strapi Admin Panel
+  strapi-admin:
+    build:
+      context: ./strapi-admin
+      dockerfile: Dockerfile
+    container_name: trxguardian-strapi
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./strapi-admin:/opt/app
+      - /opt/app/node_modules
     environment:
       - NODE_ENV=development
-      - REACT_APP_API_URL=http://localhost:5174/api
+      - DATABASE_CLIENT=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=trxguardian_admin
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - BACKEND_API_URL=http://trxguardian-backend:5174
+      - FRONTEND_URL=http://localhost:5173
     depends_on:
-      - backend
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - trxguardian-network
 
@@ -37,22 +85,39 @@ services:
       - TRON_NODE=https://api.trongrid.io
       - CONTRACT_USDT=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
       - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/trxguardian_admin
+      - STRAPI_URL=http://strapi-admin:1337
       - NOWPAYMENTS_API_KEY=your_nowpayments_api_key
       - FRONTEND_URL=http://localhost:5173
       - BACKEND_URL=http://localhost:5174
+      - ADMIN_WALLET=TJF7BrGJREfNFjBoCVdSNQyLw1PV5s37hm
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     networks:
       - trxguardian-network
 
-  # Redis service for token storage
-  redis:
-    image: redis:alpine
-    container_name: trxguardian-redis
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trxguardian-frontend
     ports:
-      - "6379:6379"
+      - "5173:5173"
     volumes:
-      - redis-data:/data
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:5174/api
+      - REACT_APP_STRAPI_URL=http://localhost:1337/api
+      - REACT_APP_P2P_ENABLED=true
+    depends_on:
+      - backend
+      - strapi-admin
     networks:
       - trxguardian-network
 
@@ -61,4 +126,5 @@ networks:
     driver: bridge
 
 volumes:
+  postgres-data:
   redis-data:

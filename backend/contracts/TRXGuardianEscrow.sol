@@ -1,298 +1,300 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+interface IERC20 {
+    function transfer(address to, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
 
-/**
- * @title TRXGuardianEscrow
- * @dev Contrato de custodia para operaciones P2P de USDT en la red TRON
- */
-contract TRXGuardianEscrow is Ownable, ReentrancyGuard {
-    // Dirección del token USDT en la red TRON
+contract TRXGuardianEscrow {
+    address public owner;
+    address public admin;
     IERC20 public usdtToken;
     
-    // Comisión de la plataforma (en porcentaje, 100 = 1%)
-    uint256 public feePercentage = 50; // 0.5% por defecto
+    uint256 public commissionRate = 500; // 0.5% = 500 / 100000
+    uint256 public constant COMMISSION_DENOMINATOR = 100000;
     
-    // Tiempo máximo de una operación antes de poder cancelarla (en segundos)
-    uint256 public maxTradeTime = 86400; // 24 horas por defecto
+    enum OrderStatus { Active, Locked, Completed, Disputed, Cancelled }
     
-    // Tiempo de espera para disputas (en segundos)
-    uint256 public disputeWaitTime = 172800; // 48 horas por defecto
-    
-    // Enumeración para el estado de las operaciones
-    enum TradeStatus { Created, Locked, Completed, Disputed, Cancelled }
-    
-    // Estructura para almacenar información de una operación
-    struct Trade {
-        address seller;
+    struct EscrowOrder {
+        string orderId;
         address buyer;
+        address seller;
         uint256 amount;
-        uint256 fee;
+        uint256 commission;
+        OrderStatus status;
         uint256 createdAt;
-        uint256 lockedAt;
-        uint256 completedAt;
-        TradeStatus status;
-        string paymentMethod;
-        string tradeId;
-        bool isDisputed;
+        uint256 expiresAt;
+        bool buyerConfirmed;
+        bool sellerConfirmed;
+        string disputeReason;
     }
     
-    // Mapeo de ID de operación a datos de la operación
-    mapping(uint256 => Trade) public trades;
+    mapping(string => EscrowOrder) public orders;
+    mapping(address => uint256) public userReputation;
+    mapping(address => uint256) public totalTrades;
+    mapping(address => bool) public authorizedArbitrators;
     
-    // Contador de operaciones
-    uint256 public tradeCount;
+    event OrderCreated(string indexed orderId, address indexed buyer, address indexed seller, uint256 amount);
+    event OrderLocked(string indexed orderId);
+    event OrderCompleted(string indexed orderId);
+    event OrderDisputed(string indexed orderId, string reason);
+    event OrderCancelled(string indexed orderId);
+    event CommissionUpdated(uint256 newRate);
+    event ArbitratorAdded(address arbitrator);
+    event ArbitratorRemoved(address arbitrator);
     
-    // Mapeo de usuario a operaciones activas
-    mapping(address => uint256[]) public userTrades;
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
     
-    // Eventos
-    event TradeCreated(uint256 indexed tradeId, address indexed seller, string externalTradeId, uint256 amount);
-    event TradeLocked(uint256 indexed tradeId, address indexed buyer);
-    event TradeCompleted(uint256 indexed tradeId);
-    event TradeCancelled(uint256 indexed tradeId);
-    event TradeDisputed(uint256 indexed tradeId, address indexed disputeInitiator);
-    event DisputeResolved(uint256 indexed tradeId, address winner);
-    event FeeUpdated(uint256 newFeePercentage);
+    modifier onlyAdmin() {
+        require(msg.sender == admin || msg.sender == owner, "Only admin can call this function");
+        _;
+    }
     
-    /**
-     * @dev Constructor del contrato
-     * @param _usdtToken Dirección del contrato USDT en la red TRON
-     */
-    constructor(address _usdtToken) {
+    modifier onlyArbitrator() {
+        require(authorizedArbitrators[msg.sender] || msg.sender == owner, "Only arbitrator can call this function");
+        _;
+    }
+    
+    modifier orderExists(string memory orderId) {
+        require(bytes(orders[orderId].orderId).length > 0, "Order does not exist");
+        _;
+    }
+    
+    constructor(address _usdtToken, address _admin) {
+        owner = msg.sender;
+        admin = _admin;
         usdtToken = IERC20(_usdtToken);
+        authorizedArbitrators[owner] = true;
+        authorizedArbitrators[_admin] = true;
     }
     
-    /**
-     * @dev Crea una nueva operación
-     * @param _buyer Dirección del comprador (opcional, puede ser address(0))
-     * @param _amount Cantidad de USDT
-     * @param _paymentMethod Método de pago (ej. "Bank Transfer")
-     * @param _tradeId ID externo de la operación
-     */
-    function createTrade(
-        address _buyer,
-        uint256 _amount,
-        string memory _paymentMethod,
-        string memory _tradeId
-    ) external nonReentrant {
-        require(_amount > 0, "Amount must be greater than 0");
+    function createOrder(
+        string memory orderId,
+        address buyer,
+        address seller,
+        uint256 amount,
+        uint256 expirationHours
+    ) external onlyAdmin {
+        require(bytes(orders[orderId].orderId).length == 0, "Order already exists");
+        require(buyer != seller, "Buyer and seller cannot be the same");
+        require(amount > 0, "Amount must be greater than 0");
         
-        // Calcular comisión
-        uint256 fee = (_amount * feePercentage) / 10000;
-        uint256 totalAmount = _amount + fee;
+        uint256 commission = (amount * commissionRate) / COMMISSION_DENOMINATOR;
         
-        // Transferir USDT al contrato
-        require(usdtToken.transferFrom(msg.sender, address(this), totalAmount), "USDT transfer failed");
-        
-        // Crear nueva operación
-        uint256 tradeId = tradeCount++;
-        trades[tradeId] = Trade({
-            seller: msg.sender,
-            buyer: _buyer,
-            amount: _amount,
-            fee: fee,
+        orders[orderId] = EscrowOrder({
+            orderId: orderId,
+            buyer: buyer,
+            seller: seller,
+            amount: amount,
+            commission: commission,
+            status: OrderStatus.Active,
             createdAt: block.timestamp,
-            lockedAt: 0,
-            completedAt: 0,
-            status: TradeStatus.Created,
-            paymentMethod: _paymentMethod,
-            tradeId: _tradeId,
-            isDisputed: false
+            expiresAt: block.timestamp + (expirationHours * 1 hours),
+            buyerConfirmed: false,
+            sellerConfirmed: false,
+            disputeReason: ""
         });
         
-        // Añadir a operaciones del usuario
-        userTrades[msg.sender].push(tradeId);
-        
-        emit TradeCreated(tradeId, msg.sender, _tradeId, _amount);
+        emit OrderCreated(orderId, buyer, seller, amount);
     }
     
-    /**
-     * @dev Bloquea fondos para una operación (comprador se une)
-     * @param _tradeId ID de la operación
-     */
-    function lockFunds(uint256 _tradeId) external nonReentrant {
-        Trade storage trade = trades[_tradeId];
+    function lockFunds(string memory orderId) external orderExists(orderId) {
+        EscrowOrder storage order = orders[orderId];
+        require(msg.sender == order.seller, "Only seller can lock funds");
+        require(order.status == OrderStatus.Active, "Order is not active");
+        require(block.timestamp < order.expiresAt, "Order has expired");
         
-        require(trade.status == TradeStatus.Created, "Trade is not in Created status");
-        require(trade.buyer == address(0) || trade.buyer == msg.sender, "You are not the buyer");
-        require(trade.seller != msg.sender, "Seller cannot be buyer");
+        // Transfer USDT from seller to contract
+        require(
+            usdtToken.transferFrom(msg.sender, address(this), order.amount),
+            "USDT transfer failed"
+        );
         
-        trade.buyer = msg.sender;
-        trade.status = TradeStatus.Locked;
-        trade.lockedAt = block.timestamp;
-        
-        // Añadir a operaciones del usuario
-        userTrades[msg.sender].push(_tradeId);
-        
-        emit TradeLocked(_tradeId, msg.sender);
+        order.status = OrderStatus.Locked;
+        emit OrderLocked(orderId);
     }
     
-    /**
-     * @dev Libera fondos al comprador (vendedor confirma pago)
-     * @param _tradeId ID de la operación
-     */
-    function releaseFunds(uint256 _tradeId) external nonReentrant {
-        Trade storage trade = trades[_tradeId];
+    function confirmPayment(string memory orderId) external orderExists(orderId) {
+        EscrowOrder storage order = orders[orderId];
+        require(order.status == OrderStatus.Locked, "Order is not locked");
+        require(msg.sender == order.buyer || msg.sender == order.seller, "Not authorized");
         
-        require(trade.status == TradeStatus.Locked, "Trade is not in Locked status");
-        require(trade.seller == msg.sender, "Only seller can release funds");
-        
-        _completeTrade(_tradeId);
-    }
-    
-    /**
-     * @dev Cancela una operación y devuelve los fondos al vendedor
-     * @param _tradeId ID de la operación
-     */
-    function cancelTrade(uint256 _tradeId) external nonReentrant {
-        Trade storage trade = trades[_tradeId];
-        
-        require(trade.status == TradeStatus.Created || trade.status == TradeStatus.Locked, "Trade cannot be cancelled");
-        
-        // Si está en estado Created, solo el vendedor puede cancelar
-        if (trade.status == TradeStatus.Created) {
-            require(trade.seller == msg.sender, "Only seller can cancel at this stage");
-        }
-        // Si está en estado Locked, verificar condiciones
-        else {
-            // El vendedor puede cancelar si no hay comprador asignado
-            if (trade.seller == msg.sender) {
-                require(trade.buyer == address(0), "Cannot cancel, buyer already assigned");
-            }
-            // El comprador puede cancelar en cualquier momento
-            else if (trade.buyer == msg.sender) {
-                // Permitido
-            }
-            // El administrador puede cancelar si ha pasado el tiempo máximo
-            else if (msg.sender == owner()) {
-                require(block.timestamp > trade.lockedAt + maxTradeTime, "Trade time not expired");
-            }
-            else {
-                revert("Not authorized to cancel");
-            }
-        }
-        
-        trade.status = TradeStatus.Cancelled;
-        
-        // Devolver fondos al vendedor (incluida la comisión)
-        uint256 totalAmount = trade.amount + trade.fee;
-        require(usdtToken.transfer(trade.seller, totalAmount), "USDT transfer failed");
-        
-        emit TradeCancelled(_tradeId);
-    }
-    
-    /**
-     * @dev Inicia una disputa
-     * @param _tradeId ID de la operación
-     */
-    function disputeTrade(uint256 _tradeId) external nonReentrant {
-        Trade storage trade = trades[_tradeId];
-        
-        require(trade.status == TradeStatus.Locked, "Trade is not in Locked status");
-        require(trade.seller == msg.sender || trade.buyer == msg.sender, "Only buyer or seller can dispute");
-        require(!trade.isDisputed, "Trade is already disputed");
-        
-        trade.isDisputed = true;
-        trade.status = TradeStatus.Disputed;
-        
-        emit TradeDisputed(_tradeId, msg.sender);
-    }
-    
-    /**
-     * @dev Resuelve una disputa (solo administrador)
-     * @param _tradeId ID de la operación
-     * @param _winner Dirección del ganador (vendedor o comprador)
-     */
-    function resolveDispute(uint256 _tradeId, address _winner) external onlyOwner nonReentrant {
-        Trade storage trade = trades[_tradeId];
-        
-        require(trade.status == TradeStatus.Disputed, "Trade is not disputed");
-        require(_winner == trade.seller || _winner == trade.buyer, "Winner must be buyer or seller");
-        
-        if (_winner == trade.buyer) {
-            // El comprador gana, transferir fondos al comprador
-            require(usdtToken.transfer(trade.buyer, trade.amount), "USDT transfer failed");
-            // La comisión se queda en el contrato
+        if (msg.sender == order.buyer) {
+            order.buyerConfirmed = true;
         } else {
-            // El vendedor gana, devolver todo al vendedor
-            uint256 totalAmount = trade.amount + trade.fee;
-            require(usdtToken.transfer(trade.seller, totalAmount), "USDT transfer failed");
+            order.sellerConfirmed = true;
         }
         
-        trade.status = TradeStatus.Completed;
-        trade.completedAt = block.timestamp;
+        // If both parties confirmed, complete the order
+        if (order.buyerConfirmed && order.sellerConfirmed) {
+            _completeOrder(orderId);
+        }
+    }
+    
+    function _completeOrder(string memory orderId) internal {
+        EscrowOrder storage order = orders[orderId];
         
-        emit DisputeResolved(_tradeId, _winner);
-    }
-    
-    /**
-     * @dev Completa una operación
-     * @param _tradeId ID de la operación
-     */
-    function _completeTrade(uint256 _tradeId) internal {
-        Trade storage trade = trades[_tradeId];
+        uint256 sellerAmount = order.amount - order.commission;
+        uint256 commissionAmount = order.commission;
         
-        trade.status = TradeStatus.Completed;
-        trade.completedAt = block.timestamp;
+        // Transfer USDT to buyer
+        require(usdtToken.transfer(order.buyer, sellerAmount), "Transfer to buyer failed");
         
-        // Transferir fondos al comprador
-        require(usdtToken.transfer(trade.buyer, trade.amount), "USDT transfer failed");
+        // Transfer commission to owner
+        if (commissionAmount > 0) {
+            require(usdtToken.transfer(owner, commissionAmount), "Commission transfer failed");
+        }
         
-        emit TradeCompleted(_tradeId);
+        order.status = OrderStatus.Completed;
+        
+        // Update reputation scores
+        userReputation[order.buyer] += 1;
+        userReputation[order.seller] += 1;
+        totalTrades[order.buyer] += 1;
+        totalTrades[order.seller] += 1;
+        
+        emit OrderCompleted(orderId);
     }
     
-    /**
-     * @dev Actualiza el porcentaje de comisión (solo administrador)
-     * @param _feePercentage Nuevo porcentaje de comisión (100 = 1%)
-     */
-    function updateFeePercentage(uint256 _feePercentage) external onlyOwner {
-        require(_feePercentage <= 1000, "Fee too high"); // Máximo 10%
-        feePercentage = _feePercentage;
-        emit FeeUpdated(_feePercentage);
+    function disputeOrder(string memory orderId, string memory reason) external orderExists(orderId) {
+        EscrowOrder storage order = orders[orderId];
+        require(order.status == OrderStatus.Locked, "Order is not locked");
+        require(msg.sender == order.buyer || msg.sender == order.seller, "Not authorized");
+        
+        order.status = OrderStatus.Disputed;
+        order.disputeReason = reason;
+        
+        emit OrderDisputed(orderId, reason);
     }
     
-    /**
-     * @dev Actualiza el tiempo máximo de una operación (solo administrador)
-     * @param _maxTradeTime Nuevo tiempo máximo en segundos
-     */
-    function updateMaxTradeTime(uint256 _maxTradeTime) external onlyOwner {
-        maxTradeTime = _maxTradeTime;
+    function resolveDispute(
+        string memory orderId,
+        bool favorBuyer,
+        uint256 buyerAmount,
+        uint256 sellerAmount
+    ) external onlyArbitrator orderExists(orderId) {
+        EscrowOrder storage order = orders[orderId];
+        require(order.status == OrderStatus.Disputed, "Order is not disputed");
+        require(buyerAmount + sellerAmount <= order.amount, "Amounts exceed order total");
+        
+        if (buyerAmount > 0) {
+            require(usdtToken.transfer(order.buyer, buyerAmount), "Transfer to buyer failed");
+        }
+        
+        if (sellerAmount > 0) {
+            require(usdtToken.transfer(order.seller, sellerAmount), "Transfer to seller failed");
+        }
+        
+        // Remaining amount goes to commission
+        uint256 remaining = order.amount - buyerAmount - sellerAmount;
+        if (remaining > 0) {
+            require(usdtToken.transfer(owner, remaining), "Commission transfer failed");
+        }
+        
+        order.status = OrderStatus.Completed;
+        
+        // Update reputation based on dispute resolution
+        if (favorBuyer) {
+            userReputation[order.buyer] += 1;
+            if (userReputation[order.seller] > 0) {
+                userReputation[order.seller] -= 1;
+            }
+        } else {
+            userReputation[order.seller] += 1;
+            if (userReputation[order.buyer] > 0) {
+                userReputation[order.buyer] -= 1;
+            }
+        }
+        
+        totalTrades[order.buyer] += 1;
+        totalTrades[order.seller] += 1;
+        
+        emit OrderCompleted(orderId);
     }
     
-    /**
-     * @dev Actualiza el tiempo de espera para disputas (solo administrador)
-     * @param _disputeWaitTime Nuevo tiempo de espera en segundos
-     */
-    function updateDisputeWaitTime(uint256 _disputeWaitTime) external onlyOwner {
-        disputeWaitTime = _disputeWaitTime;
+    function cancelOrder(string memory orderId) external orderExists(orderId) {
+        EscrowOrder storage order = orders[orderId];
+        require(
+            msg.sender == order.buyer || 
+            msg.sender == order.seller || 
+            msg.sender == owner ||
+            block.timestamp > order.expiresAt,
+            "Not authorized to cancel"
+        );
+        require(order.status == OrderStatus.Active || order.status == OrderStatus.Locked, "Cannot cancel order");
+        
+        // If funds are locked, return them to seller
+        if (order.status == OrderStatus.Locked) {
+            require(usdtToken.transfer(order.seller, order.amount), "Refund failed");
+        }
+        
+        order.status = OrderStatus.Cancelled;
+        emit OrderCancelled(orderId);
     }
     
-    /**
-     * @dev Retira comisiones acumuladas (solo administrador)
-     * @param _amount Cantidad a retirar
-     */
-    function withdrawFees(uint256 _amount) external onlyOwner {
-        require(usdtToken.transfer(owner(), _amount), "USDT transfer failed");
+    function getOrder(string memory orderId) external view returns (
+        address buyer,
+        address seller,
+        uint256 amount,
+        uint256 commission,
+        OrderStatus status,
+        uint256 createdAt,
+        uint256 expiresAt,
+        bool buyerConfirmed,
+        bool sellerConfirmed
+    ) {
+        EscrowOrder memory order = orders[orderId];
+        return (
+            order.buyer,
+            order.seller,
+            order.amount,
+            order.commission,
+            order.status,
+            order.createdAt,
+            order.expiresAt,
+            order.buyerConfirmed,
+            order.sellerConfirmed
+        );
     }
     
-    /**
-     * @dev Obtiene las operaciones de un usuario
-     * @param _user Dirección del usuario
-     * @return Array de IDs de operaciones
-     */
-    function getUserTrades(address _user) external view returns (uint256[] memory) {
-        return userTrades[_user];
+    function getUserReputation(address user) external view returns (uint256 reputation, uint256 trades) {
+        return (userReputation[user], totalTrades[user]);
     }
     
-    /**
-     * @dev Obtiene el saldo de comisiones en el contrato
-     * @return Saldo de comisiones
-     */
-    function getContractBalance() external view returns (uint256) {
-        return usdtToken.balanceOf(address(this));
+    function updateCommissionRate(uint256 newRate) external onlyOwner {
+        require(newRate <= 10000, "Commission rate too high"); // Max 10%
+        commissionRate = newRate;
+        emit CommissionUpdated(newRate);
     }
+    
+    function addArbitrator(address arbitrator) external onlyOwner {
+        authorizedArbitrators[arbitrator] = true;
+        emit ArbitratorAdded(arbitrator);
+    }
+    
+    function removeArbitrator(address arbitrator) external onlyOwner {
+        require(arbitrator != owner, "Cannot remove owner");
+        authorizedArbitrators[arbitrator] = false;
+        emit ArbitratorRemoved(arbitrator);
+    }
+    
+    function emergencyWithdraw(address token, uint256 amount) external onlyOwner {
+        if (token == address(0)) {
+            payable(owner).transfer(amount);
+        } else {
+            IERC20(token).transfer(owner, amount);
+        }
+    }
+    
+    function updateAdmin(address newAdmin) external onlyOwner {
+        admin = newAdmin;
+        authorizedArbitrators[newAdmin] = true;
+    }
+    
+    receive() external payable {}
 }

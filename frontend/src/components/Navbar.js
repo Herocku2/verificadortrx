@@ -147,6 +147,9 @@ const Navbar = () => {
           <NavLink to="/pricing" active={location.pathname === '/pricing' ? 'true' : undefined}>
             Pricing
           </NavLink>
+          <NavLink to="/p2p" active={location.pathname === '/p2p' ? 'true' : undefined}>
+            P2P Trading
+          </NavLink>
           {isAdmin && (
             <NavLink to="/admin" active={location.pathname.startsWith('/admin') ? 'true' : undefined}>
               Admin

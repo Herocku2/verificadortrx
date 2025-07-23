@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "p2p_chats",
+  "info": {
+    "singularName": "p2p-chat",
+    "pluralName": "p2p-chats",
+    "displayName": "P2P Chat",
+    "description": "Mensajes de chat entre usuarios en órdenes P2P"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::p2p-order.p2p-order",
+      "inversedBy": "chat_messages"
+    },
+    "wallet_remitente": {
+      "type": "string",
+      "required": true,
+      "maxLength": 34,
+      "minLength": 34
+    },
+    "mensaje": {
+      "type": "text",
+      "required": true
+    },
+    "tipo_mensaje": {
+      "type": "enumeration",
+      "enum": ["texto", "imagen", "archivo", "sistema"],
+      "default": "texto",
+      "required": true
+    },
+    "archivo_url": {
+      "type": "string",
+      "description": "URL del archivo adjunto si aplica"
+    },
+    "leido": {
+      "type": "boolean",
+      "default": false
+    },
+    "fecha_lectura": {
+      "type": "datetime"
+    }
+  }
+}

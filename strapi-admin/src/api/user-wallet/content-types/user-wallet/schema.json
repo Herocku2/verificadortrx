@@ -1,0 +1,81 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_wallets",
+  "info": {
+    "singularName": "user-wallet",
+    "pluralName": "user-wallets",
+    "displayName": "User Wallet",
+    "description": "TRON wallet users with their plans and tokens"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "wallet_address": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 34,
+      "maxLength": 34,
+      "regex": "^T[A-Za-z0-9]{33}$"
+    },
+    "username": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 2,
+      "maxLength": 50
+    },
+    "plan": {
+      "type": "enumeration",
+      "enum": ["Free", "Basic", "Intermedio", "Premium", "Unlimited"],
+      "default": "Free",
+      "required": true
+    },
+    "tokens_available": {
+      "type": "integer",
+      "default": 3,
+      "min": 0
+    },
+    "total_scans": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "subscription_expires": {
+      "type": "datetime"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_login": {
+      "type": "datetime"
+    },
+    "last_scan": {
+      "type": "datetime"
+    },
+    "registration_ip": {
+      "type": "string"
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "user_wallet"
+    },
+    "scan_history": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::scan-history.scan-history",
+      "mappedBy": "user_wallet"
+    },
+    "p2p_orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::p2p-order.p2p-order",
+      "mappedBy": "user_wallet"
+    }
+  }
+}
