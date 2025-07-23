@@ -329,6 +329,11 @@ const ScannerPage = () => {
       } else if (err.response?.status === 429) {
         setLimitType('ip');
         setShowLimitModal(true);
+      } else if (err.response?.data?.error) {
+        // Usar el mensaje de error proporcionado por el servidor
+        setError(err.response.data.error);
+      } else if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        setError('Network connection error. Please check your internet connection and try again.');
       } else {
         setError('Error analyzing wallet. Please try again.');
       }

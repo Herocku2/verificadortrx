@@ -658,6 +658,25 @@ const P2PPage = () => {
       <CreateOfferButton onClick={handleCreateOffer}>
         +
       </CreateOfferButton>
+
+      {/* Modal para crear nueva oferta */}
+      <CreateP2POfferModal 
+        isOpen={showCreateModal} 
+        onClose={() => setShowCreateModal(false)} 
+        wallet={wallet}
+        onSuccess={() => {
+          // Recargar las ofertas del usuario después de crear una nueva
+          if (activeTab === 'mis-ofertas') {
+            const userOffersComponent = document.querySelector('UserP2POffers');
+            if (userOffersComponent && userOffersComponent.loadUserOffers) {
+              userOffersComponent.loadUserOffers();
+            } else {
+              // Si no podemos acceder directamente al componente, recargar la página
+              window.location.reload();
+            }
+          }
+        }}
+      />
     </P2PContainer>
   );
 };

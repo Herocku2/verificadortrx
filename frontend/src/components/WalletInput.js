@@ -197,28 +197,48 @@ const WalletInput = ({ onAnalyze, showOptions = true, showConnect = true }) => {
     if (window.tronWeb) {
       try {
         console.log("Intentando conectar TronLink...");
+        setTronLinkStatus('Connecting...');
         
-        // Esperar un momento para asegurarnos de que TronLink esté completamente cargado
-        setTimeout(async () => {
-          try {
-            // Verificar si podemos acceder a la dirección
-            if (window.tronWeb.defaultAddress && window.tronWeb.defaultAddress.base58) {
-              const address = window.tronWeb.defaultAddress.base58;
-              console.log("Wallet detectada:", address);
-              setWallet(address);
-              setTronLinkStatus('Connected');
-              updateWallet(address);
-            } else {
-              // Si no hay dirección disponible, podría ser que el usuario no ha desbloqueado TronLink
-              alert('Por favor desbloquea tu wallet TronLink y vuelve a intentarlo');
-              setTronLinkStatus('Not Connected');
-            }
-          } catch (delayedError) {
-            console.error('Error después de espera:', delayedError);
-            setTronLinkStatus('Connection Error');
-            alert('Error al conectar: ' + (delayedError.message || 'Error desconocido'));
+        // Verificar si TronWeb está listo
+        if (window.tronWeb.ready) {
+          // Verificar si podemos acceder a la dirección
+          if (window.tronWeb.defaultAddress && window.tronWeb.defaultAddress.base58) {
+            const address = window.tronWeb.defaultAddress.base58;
+            console.log("Wallet detectada:", address);
+            setWallet(address);
+            setTronLinkStatus('Connected');
+            updateWallet(address);
+          } else {
+            // Si no hay dirección disponible, podría ser que el usuario no ha desbloqueado TronLink
+            console.log("TronWeb listo pero no hay dirección disponible");
+            alert('Por favor desbloquea tu wallet TronLink y vuelve a intentarlo');
+            setTronLinkStatus('Not Connected');
           }
-        }, 1000);
+        } else {
+          console.log("TronWeb no está listo, esperando...");
+          
+          // Esperar un momento para asegurarnos de que TronLink esté completamente cargado
+          setTimeout(async () => {
+            try {
+              // Verificar si podemos acceder a la dirección después de esperar
+              if (window.tronWeb && window.tronWeb.defaultAddress && window.tronWeb.defaultAddress.base58) {
+                const address = window.tronWeb.defaultAddress.base58;
+                console.log("Wallet detectada después de espera:", address);
+                setWallet(address);
+                setTronLinkStatus('Connected');
+                updateWallet(address);
+              } else {
+                console.log("No se pudo obtener la dirección después de esperar");
+                alert('Por favor desbloquea tu wallet TronLink y vuelve a intentarlo');
+                setTronLinkStatus('Not Connected');
+              }
+            } catch (delayedError) {
+              console.error('Error después de espera:', delayedError);
+              setTronLinkStatus('Connection Error');
+              alert('Error al conectar: ' + (delayedError.message || 'Error desconocido'));
+            }
+          }, 2000);
+        }
       } catch (error) {
         console.error('Error connecting to TronLink:', error);
         setTronLinkStatus('Connection Error');
@@ -237,33 +257,51 @@ const WalletInput = ({ onAnalyze, showOptions = true, showConnect = true }) => {
   // Verificar si TronLink está instalado
   React.useEffect(() => {
     let checkCount = 0;
-    const maxChecks = 10; // Limitar el número de verificaciones
+    const maxChecks = 5; // Limitar el número de verificaciones para evitar bucles
+    let isMounted = true; // Flag para evitar actualizar estado en componentes desmontados
     
     const checkTronLink = () => {
+      if (!isMounted) return;
+      
       checkCount++;
       
       // Si ya hemos verificado demasiadas veces, detener
       if (checkCount > maxChecks) {
+        console.log(`Máximo número de verificaciones (${maxChecks}) alcanzado`);
         return;
       }
       
-      if (window.tronWeb) {
-        try {
-          // Verificar si tronWeb está disponible
-          if (window.tronWeb.defaultAddress) {
+      try {
+        // Verificar si tronWeb existe en window
+        if (window.tronWeb) {
+          console.log("TronWeb detectado, verificando estado...");
+          
+          // Verificar si tronWeb está inicializado correctamente
+          if (window.tronWeb.ready) {
+            console.log("TronWeb está listo");
             setTronLinkStatus('Detected');
             
             // Si ya está conectado, actualizar la wallet
-            if (window.tronWeb.defaultAddress.base58) {
+            if (window.tronWeb.defaultAddress && window.tronWeb.defaultAddress.base58) {
               const address = window.tronWeb.defaultAddress.base58;
+              console.log("Wallet conectada:", address);
               setWallet(address);
               setTronLinkStatus('Connected');
               updateWallet(address);
+            } else {
+              console.log("TronWeb detectado pero no hay wallet conectada");
             }
+          } else {
+            console.log("TronWeb detectado pero no está listo");
+            setTronLinkStatus('Detected');
           }
-        } catch (error) {
-          console.error('Error checking TronLink:', error);
+        } else {
+          console.log("TronWeb no detectado");
+          setTronLinkStatus('Not Detected');
         }
+      } catch (error) {
+        console.error('Error al verificar TronLink:', error);
+        setTronLinkStatus('Error');
       }
     };
     
@@ -273,10 +311,12 @@ const WalletInput = ({ onAnalyze, showOptions = true, showConnect = true }) => {
     // Verificar después de un breve retraso para dar tiempo a que TronLink se inicialice
     const initialTimeout = setTimeout(checkTronLink, 1500);
     
-    // Verificar periódicamente pero solo unas pocas veces
-    const interval = setInterval(checkTronLink, 5000);
+    // Verificar periódicamente pero solo unas pocas veces con un intervalo más largo
+    const interval = setInterval(checkTronLink, 3000);
     
+    // Limpiar timeouts y intervalos al desmontar
     return () => {
+      isMounted = false;
       clearTimeout(initialTimeout);
       clearInterval(interval);
     };
