@@ -197,6 +197,30 @@ const ErrorContainer = styled.div`
   padding: 1rem;
   color: var(--color-danger);
   margin-bottom: 1rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  
+  & p {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+  }
+  
+  & button {
+    margin-top: 1rem;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    
+    &:hover {
+      background-color: var(--color-secondary);
+    }
+  }
 `;
 
 const TokensInfo = styled.div`
@@ -377,7 +401,16 @@ const ScannerPage = () => {
       
       {error && (
         <ErrorContainer>
-          {error}
+          <strong>{error}</strong>
+          {error.includes('conexión') || error.includes('connection') || error.includes('Network') ? (
+            <>
+              <p>
+                Esto puede deberse a problemas de conectividad con la blockchain de TRON o con tu conexión a internet.
+                Por favor, verifica tu conexión e intenta nuevamente en unos momentos.
+              </p>
+              <button onClick={() => setError(null)}>Intentar nuevamente</button>
+            </>
+          ) : null}
         </ErrorContainer>
       )}
       

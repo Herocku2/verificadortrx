@@ -63,10 +63,31 @@ export const verifyWalletBasic = async (wallet) => {
 // Verificación completa de wallet (consume 1 token)
 export const verifyWallet = async (wallet) => {
   try {
+    // Primero verificar el estado de la conexión con TRON
+    try {
+      const statusResponse = await apiClient.get('/verify/status');
+      if (!statusResponse.data.success) {
+        throw new Error('La conexión con la blockchain de TRON no está disponible en este momento. Por favor, intenta más tarde.');
+      }
+    } catch (statusError) {
+      console.warn('Error al verificar estado de conexión TRON:', statusError);
+      // Continuar de todos modos, el endpoint principal manejará el error si persiste
+    }
+    
     const response = await apiClient.get(`/verify/${wallet}`);
     return response.data;
   } catch (error) {
     console.error('Error en verificación completa:', error);
+    
+    // Mejorar el mensaje de error para el usuario
+    if (error.message && error.message.includes('blockchain')) {
+      throw error; // Usar el mensaje personalizado
+    } else if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    } else if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+      throw new Error('Error de conexión. Por favor, verifica tu conexión a internet e intenta nuevamente.');
+    }
+    
     throw error;
   }
 };
