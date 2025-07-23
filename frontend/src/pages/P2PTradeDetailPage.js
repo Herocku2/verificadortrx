@@ -204,10 +204,52 @@ const P2PTradeDetailPage = () => {
   const loadOfferDetails = async () => {
     try {
       setLoading(true);
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await p2pService.getOfferDetails(offerId);
       
-      // Simulación de datos para desarrollo
+      // Intentar obtener los detalles de la oferta desde la API
+      try {
+        const response = await p2pService.getOfferDetails(offerId);
+        
+        if (response && response.data && response.data.success) {
+          const offerData = response.data.data;
+          
+          // Verificar que la oferta no sea del usuario actual
+          if (offerData.wallet === wallet) {
+            setError('No puedes tradear con tu propia oferta');
+          }
+          
+          setOffer(offerData);
+          setAmount(offerData.cantidad_min.toString());
+          setTotalFiat(offerData.cantidad_min * offerData.precio_usdt);
+          return;
+        }
+      } catch (apiError) {
+        console.warn('Error al obtener detalles de la API, usando datos en caché o simulados:', apiError);
+      }
+      
+      // Si la API falla, intentar usar datos en caché
+      const cachedOffers = localStorage.getItem('p2p_offers_all');
+      if (cachedOffers) {
+        try {
+          const parsedOffers = JSON.parse(cachedOffers);
+          const cachedOffer = parsedOffers.data.find(o => o.id === offerId);
+          
+          if (cachedOffer) {
+            // Verificar que la oferta no sea del usuario actual
+            if (cachedOffer.wallet === wallet) {
+              setError('No puedes tradear con tu propia oferta');
+            }
+            
+            setOffer(cachedOffer);
+            setAmount(cachedOffer.cantidad_min.toString());
+            setTotalFiat(cachedOffer.cantidad_min * cachedOffer.precio_usdt);
+            return;
+          }
+        } catch (cacheError) {
+          console.error('Error al procesar datos en caché:', cacheError);
+        }
+      }
+      
+      // Si no hay datos en caché, usar datos simulados como último recurso
       const mockOffer = {
         id: offerId,
         wallet: 'TMuKGY31rW9abcdefghijklmnopqrstuvwx',
@@ -241,6 +283,7 @@ const P2PTradeDetailPage = () => {
       setOffer(mockOffer);
       setAmount(mockOffer.cantidad_min.toString());
       setTotalFiat(mockOffer.cantidad_min * mockOffer.precio_usdt);
+      console.log('Usando datos simulados para la oferta');
     } catch (error) {
       console.error('Error loading offer details:', error);
       setError('Error al cargar los detalles de la oferta');
@@ -289,19 +332,46 @@ const P2PTradeDetailPage = () => {
     }
     
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await p2pService.createOrder({
-      //   offerId,
-      //   wallet,
-      //   amount: parseFloat(amount)
-      // });
+      setLoading(true);
       
-      // Simulación de creación de orden
-      alert(`Orden creada exitosamente por ${amount} USDT`);
-      navigate('/p2p/orders');
+      // Crear la orden a través del servicio
+      const orderData = {
+        offer_id: offerId,
+        wallet: wallet,
+        cantidad_usdt: parseFloat(amount),
+        precio_acordado: offer.precio_usdt,
+        cantidad_fiat: totalFiat,
+        moneda_fiat: offer.moneda_local,
+        metodo_pago_usado: offer.metodo_pago,
+        wallet_comprador: offer.tipo === 'venta' ? wallet : offer.wallet,
+        wallet_vendedor: offer.tipo === 'venta' ? offer.wallet : wallet
+      };
+      
+      const response = await p2pService.createP2POrder(orderData);
+      
+      if (response && response.success) {
+        // Si la respuesta es exitosa
+        if (response._offline) {
+          alert(`Orden creada en modo offline por ${amount} USDT. Se sincronizará cuando el servidor esté disponible.`);
+        } else {
+          alert(`Orden creada exitosamente por ${amount} USDT`);
+        }
+        navigate('/p2p');
+      } else {
+        // Si hay un error en la respuesta
+        setError(response.error || 'Error al crear la orden');
+      }
     } catch (error) {
       console.error('Error creating order:', error);
-      setError('Error al crear la orden');
+      
+      // Mejorar el mensaje de error
+      if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+        setError('Error de conexión al servidor. Intenta de nuevo más tarde.');
+      } else {
+        setError(error.response?.data?.error || 'Error al crear la orden');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
