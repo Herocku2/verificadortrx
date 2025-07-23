@@ -123,5 +123,16 @@ export default {
   updateOfferStatus,
   createP2POrder,
   getUserP2POrders,
-  getP2PStats
+  getP2PStats,
+  getReferencePrices
+};// Obt
+ener precios de referencia
+export const getReferencePrices = async () => {
+  try {
+    const response = await p2pClient.get('/p2p/reference-prices');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener precios de referencia:', error);
+    throw error;
+  }
 };

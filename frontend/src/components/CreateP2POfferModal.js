@@ -143,11 +143,32 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
   const [success, setSuccess] = useState('');
   const [banks, setBanks] = useState([]);
 
+  const [referencePrices, setReferencePrices] = useState({});
+
   useEffect(() => {
     if (isOpen) {
       loadBanks(formData.pais_codigo);
+      loadReferencePrices();
     }
   }, [isOpen, formData.pais_codigo]);
+  
+  // Cargar precios de referencia
+  const loadReferencePrices = async () => {
+    try {
+      const response = await p2pService.getReferencePrices();
+      setReferencePrices(response.data.data || {});
+      
+      // Establecer precio de referencia para el país seleccionado
+      if (response.data.data && response.data.data[formData.pais_codigo]) {
+        setFormData(prev => ({
+          ...prev,
+          precio_usdt: response.data.data[formData.pais_codigo].price
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading reference prices:', error);
+    }
+  };
 
   const loadBanks = async (countryCode) => {
     try {
@@ -178,14 +199,26 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
       }));
     }
 
-    // Actualizar moneda cuando cambia el país
+    // Actualizar moneda y precio de referencia cuando cambia el país
     if (name === 'pais_codigo') {
       const country = countries.find(c => c.code === value);
       if (country) {
+        // Actualizar moneda
         setFormData(prev => ({
           ...prev,
           moneda_local: country.currency
         }));
+        
+        // Actualizar precio de referencia
+        if (referencePrices && referencePrices[value]) {
+          setFormData(prev => ({
+            ...prev,
+            precio_usdt: referencePrices[value].price
+          }));
+        }
+        
+        // Cargar bancos del nuevo país
+        loadBanks(value);
       }
     }
   };
@@ -334,6 +367,11 @@ const CreateP2POfferModal = ({ isOpen, onClose, wallet, onSuccess }) => {
               min="0.01"
               required
             />
+            {referencePrices && referencePrices[formData.pais_codigo] && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>
+                Precio de referencia: {referencePrices[formData.pais_codigo].price} {formData.moneda_local}
+              </div>
+            )}
           </FormGroup>
 
           <FormGroup>
