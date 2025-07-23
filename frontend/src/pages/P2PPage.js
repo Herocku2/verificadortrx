@@ -323,7 +323,15 @@ const P2PPage = () => {
       alert('Conecta tu wallet para crear ofertas');
       return;
     }
-    setShowCreateModal(true);
+    
+    // Asegurarse de que el modal se muestre correctamente
+    try {
+      setShowCreateModal(true);
+      console.log('Modal de creación de oferta abierto');
+    } catch (error) {
+      console.error('Error al abrir el modal de creación de oferta:', error);
+      alert('Hubo un problema al abrir el formulario. Por favor, intenta de nuevo.');
+    }
   };
 
   const handleTradeOffer = (offer) => {
