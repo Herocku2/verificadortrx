@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configuración de la URL de la API
 // Usar la variable de entorno REACT_APP_API_URL si está definida, de lo contrario usar la URL por defecto
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5174/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5173/api';
 
 // Cliente axios con configuración base
 const apiClient = axios.create({
@@ -10,7 +10,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 segundos de timeout
+  timeout: 30000, // 30 segundos de timeout para consultas blockchain
 });
 
 // Interceptor para manejar errores de red
@@ -63,9 +63,12 @@ export const verifyWalletBasic = async (wallet) => {
 // Verificación completa de wallet (consume 1 token)
 export const verifyWallet = async (wallet) => {
   try {
+    console.log(`Iniciando verificación de wallet: ${wallet}`);
+    
     // Primero verificar el estado de la conexión con TRON
     try {
       const statusResponse = await apiClient.get('/verify/status');
+      console.log('Estado de conexión TRON:', statusResponse.data);
       if (!statusResponse.data.success) {
         console.warn('La conexión con TRON no está disponible, intentando con método alternativo');
       }
@@ -78,28 +81,41 @@ export const verifyWallet = async (wallet) => {
     try {
       console.log('Intentando verificación simplificada...');
       const simpleResponse = await apiClient.get(`/verify/simple/${wallet}`);
+      console.log('Verificación simplificada exitosa');
       return simpleResponse.data;
     } catch (simpleError) {
-      console.warn('Error en verificación simplificada, intentando método estándar:', simpleError);
-      // Si falla, intentar con el método estándar
+      console.warn('Error en verificación simplificada:', simpleError);
+      
+      // Si es un error 403 (sin tokens), no intentar con el método estándar
+      if (simpleError.response?.status === 403) {
+        throw simpleError;
+      }
+      
+      console.log('Intentando método estándar como fallback...');
     }
     
     // Método estándar como fallback
     const response = await apiClient.get(`/verify/${wallet}`);
+    console.log('Verificación estándar exitosa');
     return response.data;
   } catch (error) {
     console.error('Error en verificación completa:', error);
     
     // Mejorar el mensaje de error para el usuario
-    if (error.message && error.message.includes('blockchain')) {
-      throw error; // Usar el mensaje personalizado
+    if (error.response?.status === 403) {
+      const errorData = error.response.data;
+      throw new Error(errorData.message || 'No tienes tokens suficientes para realizar esta consulta');
+    } else if (error.response?.status === 429) {
+      throw new Error('Has alcanzado el límite de consultas. Por favor, espera antes de intentar nuevamente.');
     } else if (error.response?.data?.error) {
       throw new Error(error.response.data.error);
     } else if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
-      throw new Error('Error de conexión. Por favor, verifica tu conexión a internet e intenta nuevamente.');
+      throw new Error('Error de conexión con el servidor. Por favor, verifica tu conexión a internet e intenta nuevamente.');
+    } else if (error.code === 'ECONNABORTED') {
+      throw new Error('La consulta tardó demasiado tiempo. Por favor, intenta nuevamente.');
     }
     
-    throw error;
+    throw new Error('Error inesperado al verificar la wallet. Por favor, intenta nuevamente.');
   }
 };
 

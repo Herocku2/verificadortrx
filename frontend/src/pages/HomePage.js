@@ -150,17 +150,17 @@ const CTADescription = styled.p`
 
 const HomePage = () => {
   const navigate = useNavigate();
-  
+
   const handleAnalyze = (wallet) => {
     navigate(`/scanner?wallet=${wallet}`);
   };
-  
+
   // Animación para elementos que aparecen al hacer scroll
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
-  
+
   return (
     <HomeContainer>
       <HeroSection>
@@ -174,10 +174,10 @@ const HomePage = () => {
         <Subtitle>
           Advanced Forensic Wallet Risk Scanner for TRON Network
         </Subtitle>
-        
+
         <WalletInput onAnalyze={handleAnalyze} />
       </HeroSection>
-      
+
       <FeaturesSection>
         <FeaturesGrid>
           <FeatureCard
@@ -192,7 +192,7 @@ const HomePage = () => {
               Advanced risk assessment and blacklist verification to protect your investments from fraudulent wallets.
             </FeatureDescription>
           </FeatureCard>
-          
+
           <FeatureCard
             initial="hidden"
             whileInView="visible"
@@ -205,7 +205,7 @@ const HomePage = () => {
               No personal data required, complete privacy. We don't collect emails, passwords or any personal information.
             </FeatureDescription>
           </FeatureCard>
-          
+
           <FeatureCard
             initial="hidden"
             whileInView="visible"
@@ -220,7 +220,7 @@ const HomePage = () => {
           </FeatureCard>
         </FeaturesGrid>
       </FeaturesSection>
-      
+
       <StatsSection>
         <StatsGrid>
           <StatCard>
@@ -228,19 +228,19 @@ const HomePage = () => {
             <StatValue>99.9%</StatValue>
             <StatLabel>Accuracy Rate</StatLabel>
           </StatCard>
-          
+
           <StatCard>
             <StatIcon>👥</StatIcon>
             <StatValue>50K+</StatValue>
             <StatLabel>Wallets Analyzed</StatLabel>
           </StatCard>
-          
+
           <StatCard>
             <StatIcon>🛡️</StatIcon>
             <StatValue>24/7</StatValue>
             <StatLabel>Monitoring</StatLabel>
           </StatCard>
-          
+
           <StatCard>
             <StatIcon>🌐</StatIcon>
             <StatValue>Global</StatValue>
@@ -248,7 +248,7 @@ const HomePage = () => {
           </StatCard>
         </StatsGrid>
       </StatsSection>
-      
+
       <CTASection>
         <CTATitle>Ready to secure your TRON investments?</CTATitle>
         <CTADescription>

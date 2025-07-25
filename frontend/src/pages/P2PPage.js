@@ -121,10 +121,23 @@ const OfferCard = styled(motion.div)`
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 
   &:hover {
     border-color: var(--color-primary);
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: ${props => props.type === 'compra' ? 'var(--color-success)' : 'var(--color-danger)'};
   }
 `;
 

@@ -301,13 +301,11 @@ const AdminPayments = () => {
     const fetchPayments = async () => {
       try {
         setLoading(true);
-        // En un entorno real, esto haría una llamada a la API
-        // const data = await getAdminPayments(wallet);
         
         // Datos de ejemplo para la demostración
         const data = [
-          { wallet: 'TMuKGY...31rW9', plan: 'Premium', amount: '$19.99 USD', status: 'completed', transactionId: 'tx_abc123', paymentMethod: 'TRX', date: '2024-01-20' },
-          { wallet: 'TLyqYv...M3ZYH', plan: 'Basic', amount: '$9.99 USD', status: 'completed', transactionId: 'tx_def456', paymentMethod: 'USDT', date: '2024-01-19' },
+          { wallet: 'TMuKGY...31rW9', plan: 'Premium', amount: '$19.99 USD', status: 'completed', transactionId: 'tx_abc123', paymentMethod: 'USDT', date: '2024-01-25' },
+          { wallet: 'TJkLmN...45qR8', plan: 'Basic', amount: '$9.99 USD', status: 'completed', transactionId: 'tx_def456', paymentMethod: 'TRX', date: '2024-01-22' },
           { wallet: 'TAbCbc...234567', plan: 'Premium', amount: '$19.99 USD', status: 'pending', transactionId: 'tx_ghi789', paymentMethod: 'BTC', date: '2024-01-20' },
           { wallet: 'TXyzAb...212345', plan: 'Unlimited', amount: '$49.99 USD', status: 'completed', transactionId: 'tx_jkl812', paymentMethod: 'ETH', date: '2024-01-18' }
         ];
@@ -324,24 +322,24 @@ const AdminPayments = () => {
         }, 0);
         
         const monthlyRev = data.reduce((sum, payment) => {
-          if (payment.status === 'completed' && new Date(payment.date).getMonth() === new Date().getMonth()) {
+          if (payment.status === 'completed') {
             const amount = parseFloat(payment.amount.replace('$', '').split(' ')[0]);
             return sum + amount;
           }
           return sum;
         }, 0);
         
-        const totalTrans = data.length;
+        const totalTransactions = data.length;
         
-        const successRt = data.length > 0
+        const successRate = data.length > 0 
           ? (data.filter(p => p.status === 'completed').length / data.length) * 100
           : 0;
           
         setStats({
           totalRevenue: totalRev,
           monthlyRevenue: monthlyRev,
-          totalTransactions: totalTrans,
-          successRate: successRt
+          totalTransactions: totalTransactions,
+          successRate: successRate.toFixed(0)
         });
       } catch (err) {
         console.error('Error al cargar pagos:', err);
@@ -352,14 +350,19 @@ const AdminPayments = () => {
     };
     
     fetchPayments();
-  }, [wallet]);
+  }, []);
+  
+  // Redirigir si no es administrador
+  if (!isAdmin && !loading) {
+    return <Navigate to="/" />;
+  }
   
   // Filtrar pagos
   const filteredPayments = payments.filter(payment => {
     const matchesSearch = payment.wallet.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All Status' || payment.status === statusFilter;
-    return matchesSearch && matchesStatus;
+      payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = statusFilter === 'All Status' || payment.status === statusFilter.toLowerCase();
+    return matchesSearch && matchesFilter;
   });
   
   // Paginación
@@ -368,163 +371,156 @@ const AdminPayments = () => {
   const currentPayments = filteredPayments.slice(indexOfFirstPayment, indexOfLastPayment);
   const totalPages = Math.ceil(filteredPayments.length / paymentsPerPage);
   
-  const handlePageChange = (pageNumber) => {
+  const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
   
-  const handleExportCSV = () => {
-    // En un entorno real, esto generaría un archivo CSV para descargar
-    alert('Exportando datos a CSV...');
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
   
   if (loading) {
-    return <div className="container">Cargando pagos...</div>;
-  }
-  
-  if (error) {
-    return <div className="container">{error}</div>;
+    return <div>Cargando...</div>;
   }
   
   return (
-    <PaymentsContainer className="container">
-      <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem' }}>
-        <div>
-          <AdminSidebar />
-        </div>
-        <div>
-          <PaymentsHeader>
-            <PaymentsTitle>Payment Management</PaymentsTitle>
-            <ExportButton onClick={handleExportCSV}>
-              <span>Export CSV</span>
-            </ExportButton>
-          </PaymentsHeader>
-          
-          <StatsGrid>
-            <StatCard>
-              <StatHeader>
-                <span>Total Revenue</span>
-                <StatIcon color="#00BFA5">$</StatIcon>
-              </StatHeader>
-              <StatValue>${stats.totalRevenue.toFixed(2)}</StatValue>
-              <StatSubtext>All time earnings</StatSubtext>
-            </StatCard>
-            
-            <StatCard>
-              <StatHeader>
-                <span>Monthly Revenue</span>
-                <StatIcon color="#0078FF">$</StatIcon>
-              </StatHeader>
-              <StatValue>${stats.monthlyRevenue.toFixed(2)}</StatValue>
-              <StatSubtext>This month</StatSubtext>
-            </StatCard>
-            
-            <StatCard>
-              <StatHeader>
-                <span>Total Transactions</span>
-                <StatIcon color="#651FFF">4</StatIcon>
-              </StatHeader>
-              <StatValue>{stats.totalTransactions}</StatValue>
-              <StatSubtext>Payment attempts</StatSubtext>
-            </StatCard>
-            
-            <StatCard>
-              <StatHeader>
-                <span>Success Rate</span>
-                <StatIcon color="#00C853">📈</StatIcon>
-              </StatHeader>
-              <StatValue>{stats.successRate.toFixed(1)}%</StatValue>
-              <StatSubtext>Successful payments</StatSubtext>
-            </StatCard>
-          </StatsGrid>
-          
-          <SearchBar>
-            <SearchInput
-              type="text"
-              placeholder="Search by wallet, transaction ID, or plan..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <SearchIcon>🔍</SearchIcon>
-          </SearchBar>
-          
-          <FiltersContainer>
-            <FilterSelect
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="All Status">All Status</option>
-              <option value="completed">Completed</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-            </FilterSelect>
-          </FiltersContainer>
-          
-          <PaymentsTable>
-            <TableHeader>
-              <HeaderCell>Wallet Address</HeaderCell>
-              <HeaderCell>Plan</HeaderCell>
-              <HeaderCell>Amount</HeaderCell>
-              <HeaderCell>Status</HeaderCell>
-              <HeaderCell>Transaction ID</HeaderCell>
-              <HeaderCell>Payment Method</HeaderCell>
-            </TableHeader>
-            
-            <TableBody>
-              {currentPayments.map((payment, index) => (
-                <TableRow key={index}>
-                  <Cell>
-                    <WalletAddress>{payment.wallet}</WalletAddress>
-                  </Cell>
-                  <Cell>
-                    <PlanBadge plan={payment.plan}>{payment.plan}</PlanBadge>
-                  </Cell>
-                  <Cell>{payment.amount}</Cell>
-                  <Cell>
-                    <StatusBadge status={payment.status}>
-                      {payment.status}
-                    </StatusBadge>
-                  </Cell>
-                  <Cell>{payment.transactionId}</Cell>
-                  <Cell>{payment.paymentMethod}</Cell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </PaymentsTable>
-          
-          <Pagination>
-            <PageInfo>
-              Showing {indexOfFirstPayment + 1} to {Math.min(indexOfLastPayment, filteredPayments.length)} of {filteredPayments.length} payments
-            </PageInfo>
-            
-            <PageControls>
-              <PageButton
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </PageButton>
-              
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
-                <PageButton
-                  key={pageNumber}
-                  active={pageNumber === currentPage}
-                  onClick={() => handlePageChange(pageNumber)}
-                >
-                  {pageNumber}
-                </PageButton>
-              ))}
-              
-              <PageButton
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </PageButton>
-            </PageControls>
-          </Pagination>
-        </div>
+    <div style={{ display: 'flex' }}>
+      <div>
+        <AdminSidebar />
       </div>
-    </PaymentsContainer>
+      <PaymentsContainer>
+        <PaymentsHeader>
+          <PaymentsTitle>Pagos</PaymentsTitle>
+          <ExportButton onClick={() => console.log('Export CSV')}>
+            <span>Exportar CSV</span>
+          </ExportButton>
+        </PaymentsHeader>
+        
+        <StatsGrid>
+          <StatCard>
+            <StatHeader>
+              <span>Total de Ingresos</span>
+              <StatIcon>💰</StatIcon>
+            </StatHeader>
+            <StatValue>${stats.totalRevenue}</StatValue>
+            <StatSubtext>Ganancias totales</StatSubtext>
+          </StatCard>
+          
+          <StatCard>
+            <StatHeader>
+              <span>Ingresos Mensuales</span>
+              <StatIcon>📅</StatIcon>
+            </StatHeader>
+            <StatValue>${stats.monthlyRevenue}</StatValue>
+            <StatSubtext>Este mes</StatSubtext>
+          </StatCard>
+          
+          <StatCard>
+            <StatHeader>
+              <span>Transacciones</span>
+              <StatIcon>🔄</StatIcon>
+            </StatHeader>
+            <StatValue>{stats.totalTransactions}</StatValue>
+            <StatSubtext>Intentos de pago</StatSubtext>
+          </StatCard>
+          
+          <StatCard>
+            <StatHeader>
+              <span>Tasa de Éxito</span>
+              <StatIcon>✅</StatIcon>
+            </StatHeader>
+            <StatValue>{stats.successRate}%</StatValue>
+            <StatSubtext>Pagos exitosos</StatSubtext>
+          </StatCard>
+        </StatsGrid>
+        
+        <SearchBar>
+          <SearchInput
+            type="text"
+            placeholder="Buscar por wallet o ID de transacción..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          <SearchIcon>🔍</SearchIcon>
+        </SearchBar>
+        
+        <FiltersContainer>
+          <FilterSelect
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="All Status">Todos los estados</option>
+            <option value="completed">Completados</option>
+            <option value="pending">Pendientes</option>
+            <option value="failed">Fallidos</option>
+          </FilterSelect>
+        </FiltersContainer>
+        
+        <PaymentsTable>
+          <TableHeader>
+            <HeaderCell>Wallet</HeaderCell>
+            <HeaderCell>Plan</HeaderCell>
+            <HeaderCell>Monto</HeaderCell>
+            <HeaderCell>Estado</HeaderCell>
+            <HeaderCell>ID de Transacción</HeaderCell>
+            <HeaderCell>Método de Pago</HeaderCell>
+          </TableHeader>
+          
+          <TableBody>
+            {currentPayments.map((payment, index) => (
+              <TableRow key={index}>
+                <Cell>
+                  <WalletAddress>{payment.wallet}</WalletAddress>
+                </Cell>
+                <Cell>
+                  <PlanBadge plan={payment.plan}>{payment.plan}</PlanBadge>
+                </Cell>
+                <Cell>{payment.amount}</Cell>
+                <Cell>
+                  <StatusBadge status={payment.status}>
+                    {payment.status}
+                  </StatusBadge>
+                </Cell>
+                <Cell>{payment.transactionId}</Cell>
+                <Cell>{payment.paymentMethod}</Cell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </PaymentsTable>
+        
+        <Pagination>
+          <PageInfo>
+            Mostrando {indexOfFirstPayment + 1} - {Math.min(indexOfLastPayment, filteredPayments.length)} de {filteredPayments.length} pagos
+          </PageInfo>
+          
+          <PageControls>
+            <PageButton
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </PageButton>
+            
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
+              <PageButton
+                key={pageNumber}
+                active={pageNumber === currentPage}
+                onClick={() => paginate(pageNumber)}
+              >
+                {pageNumber}
+              </PageButton>
+            ))}
+            
+            <PageButton
+              onClick={() => paginate(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente
+            </PageButton>
+          </PageControls>
+        </Pagination>
+      </PaymentsContainer>
+    </div>
   );
 };
 

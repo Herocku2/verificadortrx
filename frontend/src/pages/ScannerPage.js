@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import WalletInput from '../components/WalletInput';
 import LimitReachedModal from '../components/LimitReachedModal';
+import DiagnosticsModal from '../components/DiagnosticsModal';
 import { useUser } from '../context/UserContext';
 import { verifyWallet, verifyWalletDetailed } from '../services/api';
 import useIPLimits from '../hooks/useIPLimits';
@@ -13,6 +14,30 @@ const ScannerContainer = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 2rem 0;
+  position: relative;
+`;
+
+const DiagnosticsButton = styled(motion.button)`
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  
+  &:hover {
+    background: var(--color-primary);
+  }
 `;
 
 const ScannerHeader = styled.div`
@@ -287,6 +312,7 @@ const ScannerPage = () => {
   const [result, setResult] = useState(null);
   const [analysisType, setAnalysisType] = useState('instant');
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [limitType, setLimitType] = useState('ip');
   const navigate = useNavigate();
   const { ipLimits, consumeIPLimit, getTimeUntilReset } = useIPLimits();
@@ -402,15 +428,29 @@ const ScannerPage = () => {
       {error && (
         <ErrorContainer>
           <strong>{error}</strong>
-          {error.includes('conexión') || error.includes('connection') || error.includes('Network') ? (
+          {error.includes('conexión') || error.includes('connection') || error.includes('Network') || error.includes('tokens') ? (
             <>
               <p>
-                Esto puede deberse a problemas de conectividad con la blockchain de TRON o con tu conexión a internet.
-                Por favor, verifica tu conexión e intenta nuevamente en unos momentos.
+                {error.includes('tokens') ? 
+                  'Parece que no tienes tokens suficientes o hay un problema con tu cuenta.' :
+                  'Esto puede deberse a problemas de conectividad con la blockchain de TRON o con tu conexión a internet. Por favor, verifica tu conexión e intenta nuevamente en unos momentos.'
+                }
               </p>
-              <button onClick={() => setError(null)}>Intentar nuevamente</button>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button onClick={() => setError(null)}>Intentar nuevamente</button>
+                <button onClick={() => setShowDiagnostics(true)} style={{ background: 'var(--color-secondary)' }}>
+                  Ejecutar Diagnósticos
+                </button>
+              </div>
             </>
-          ) : null}
+          ) : (
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button onClick={() => setError(null)}>Intentar nuevamente</button>
+              <button onClick={() => setShowDiagnostics(true)} style={{ background: 'var(--color-secondary)' }}>
+                Ejecutar Diagnósticos
+              </button>
+            </div>
+          )}
         </ErrorContainer>
       )}
       
@@ -547,6 +587,20 @@ const ScannerPage = () => {
         timeUntilReset={getTimeUntilReset()}
         type={limitType}
       />
+
+      <DiagnosticsModal
+        isOpen={showDiagnostics}
+        onClose={() => setShowDiagnostics(false)}
+      />
+
+      <DiagnosticsButton
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setShowDiagnostics(true)}
+        title="Run System Diagnostics"
+      >
+        🔧
+      </DiagnosticsButton>
     </ScannerContainer>
   );
 };
