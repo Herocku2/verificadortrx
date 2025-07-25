@@ -77,11 +77,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Verificar si es wallet de administrador
-  if (!wallet || !isAdminWallet(wallet)) {
-    return <Navigate to="/" replace />;
-  }
-  
   // Cargar estadísticas del dashboard
   useEffect(() => {
     const fetchStats = async () => {
@@ -110,6 +105,11 @@ const AdminDashboard = () => {
     
     fetchStats();
   }, [wallet]);
+  
+  // Verificar si es wallet de administrador
+  if (!wallet || !isAdminWallet(wallet)) {
+    return <Navigate to="/" replace />;
+  }
   
   if (loading) {
     return <div className="container">Cargando estadísticas...</div>;

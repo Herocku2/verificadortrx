@@ -896,7 +896,7 @@ export const getOfferDetails = async (offerId) => {
   }
 };
 
-export default {
+const p2pService = {
   getP2POffers,
   createP2POffer,
   getP2PCountries,
@@ -910,3 +910,5 @@ export default {
   updateP2POrderStatus,
   getOfferDetails
 };
+
+export default p2pService;
